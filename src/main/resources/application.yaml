@@ -1,0 +1,59 @@
+spring:
+ application:
+  name: moimeasy
+
+ mail:
+  host: smtp.gmail.com
+  port: 587
+  username: lxxeugene@gmail.com
+  password: dwkn aknv bmyz uujy
+  properties:
+   mail:
+    smtp:
+     auth: true
+     starttls.enable: true
+  default-encoding: UTF-8
+
+ jpa:
+  hibernate:
+   ddl-auto: update
+   dialect: org.hibernate.dialect.MySQLDialect
+  properties:
+   hibernate:
+    format_sql: true
+  show-sql: true
+
+ datasource:
+ # Uncomment and edit the datasource settings if needed
+ # driver-class-name: com.mysql.cj.jdbc.Driver
+ # username: moimeasy
+ # password: moimeasy
+ # url: jdbc:mysql://52.79.99.54:3306/moim_easy?characterEncoding=UTF-8&serverTimezone=UTC
+
+ data:
+  redis:
+   host: localhost
+   port: 6379
+   # password: 1234
+
+ mvc:
+  format:
+   time: HH:mm
+
+ profiles:
+  include: key
+
+server:
+ port: 8088
+
+springdoc:
+ version: V0.0.1
+ swagger-ui:
+  path: /swagger.html
+  tags-sorter: alpha
+  operations-sorter: alpha
+ api-docs:
+  path: /api-docs
+ default:
+  consumes-media-type: application/json;charset=UTF-8
+  produces-media-type: application/json;charset=UTF-8

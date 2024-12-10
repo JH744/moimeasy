@@ -13,8 +13,8 @@
 </template>
 
 <script setup>
-import { useUIStore } from "@/stores/uiStore";
-import BlurIcon from "@/assets/blurIcon.svg";
+import { useUIStore } from '@/stores/uiStore';
+import BlurIcon from '@/assets/icons/blurIcon.svg';
 const uiStore = useUIStore();
 
 /** 사이드바 visible 토글 이벤트 */
@@ -80,7 +80,7 @@ const onVisible = () => {
 .logo-text {
   color: var(--main-color);
   text-align: left;
-  font-family: "Poppins-Medium", sans-serif;
+  font-family: 'Poppins-Medium', sans-serif;
   font-size: 20px;
   line-height: 24px;
   font-weight: 500;

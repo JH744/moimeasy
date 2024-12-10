@@ -2,7 +2,9 @@
   <div class="member-container">
     <h2 class="table-title">회원 관리</h2>
     <div class="table-info">
-      <span><strong>총 회원 수: {{ filteredUsers.length }}</strong></span>
+      <span
+        ><strong>총 회원 수: {{ filteredUsers.length }}</strong></span
+      >
       <button class="btn-invite" @click="inviteMember">회원 초대</button>
     </div>
 
@@ -22,47 +24,57 @@
     <table class="custom-table">
       <thead>
         <tr>
-          <th v-for="header in headers" :key="header.key">{{ header.label }}</th>
+          <th v-for="header in headers" :key="header.key">
+            {{ header.label }}
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="user in paginatedUsers" :key="user.id">
-  <td>
-    <button class="btn-name" @click="viewProfile(user)">
-      {{ user.name }} <!-- user.name은 매핑에서 정확히 확인 -->
-    </button>
-  </td>
-  <td>{{ user.nickname }}</td> <!-- user.nickname이 제대로 나오는지 확인 -->
-  <td>{{ user.role }}</td> <!-- user.role이 'user'나 'admin'으로 표시되는지 확인 -->
-  <td>{{ user.joinDate }}</td> <!-- user.joinDate 확인 -->
-</tr>
-
+          <td>
+            <button class="btn-name" @click="viewProfile(user)">
+              {{ user.name }}
+              <!-- user.name은 매핑에서 정확히 확인 -->
+            </button>
+          </td>
+          <td>{{ user.nickname }}</td>
+          <!-- user.nickname이 제대로 나오는지 확인 -->
+          <td>{{ user.role }}</td>
+          <!-- user.role이 'user'나 'admin'으로 표시되는지 확인 -->
+          <td>{{ user.joinDate }}</td>
+          <!-- user.joinDate 확인 -->
+        </tr>
       </tbody>
     </table>
 
     <div class="table-footer">
       <button @click="prevPage" :disabled="currentPage === 1">이전</button>
       <span>{{ currentPage }} / {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">다음</button>
+      <button @click="nextPage" :disabled="currentPage === totalPages">
+        다음
+      </button>
     </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:8088';
+axios.defaults.withCredentials = true;
 
 export default {
   data() {
     return {
       headers: [
-        { label: "이름", key: "name" },
-        { label: "닉네임", key: "nickname" },
-        { label: "권한", key: "role" },
-        { label: "가입 날짜", key: "joinDate" },
+        { label: '이름', key: 'name' },
+        { label: '닉네임', key: 'nickname' },
+        { label: '권한', key: 'role' },
+        { label: '가입 날짜', key: 'joinDate' },
       ],
       users: [],
-      searchQuery: "",
-      selectedSort: "newest",
+      searchQuery: '',
+      selectedSort: 'newest',
       currentPage: 1,
       rowsPerPage: 5,
     };
@@ -78,9 +90,9 @@ export default {
         )
       );
     },
-  sortedUsers() {
+    sortedUsers() {
       return this.filteredUsers.sort((a, b) => {
-        if (this.selectedSort === "newest") {
+        if (this.selectedSort === 'newest') {
           return new Date(b.joinDate) - new Date(a.joinDate);
         }
         return new Date(a.joinDate) - new Date(b.joinDate);
@@ -94,28 +106,27 @@ export default {
 
   methods: {
     async fetchUsers() {
-  try {
-    const response = await axios.get("/api/v1/users", {
-        params: { moeimId: this.loggedInUserMoeimId }, // 로그인된 사용자의 moeimId를 서버에 전달
-      });
-    console.log("Response data:", response.data);
-    this.users = response.data.map((user) => ({
-      id: user.userId, // userId가 맞는지 확인
-      name: user.userName || "N/A", // userName이 비어있는 경우 처리
-      nickname: user.nickname || "N/A", // nickname이 없을 경우 "N/A" 처리
-      role: user.role || "N/A", // role 데이터 확인
-      joinDate: user.createAt || "N/A", // joinDate를 위한 createAt 확인
-    }));
-    this.currentPage = 1; 
-    console.log("Mapped users:", this.users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-  }
-},
-updateFilter() {
-    this.fetchUsers(); // 필터 변경 시 데이터를 새로 가져오기
-  },
-
+      try {
+        const response = await axios.get('/api/v1/users', {
+          params: { moeimId: this.loggedInUserMoeimId }, // 로그인된 사용자의 moeimId를 서버에 전달
+        });
+        console.log('Response data:', response.data);
+        this.users = response.data.map((user) => ({
+          id: user.userId, // userId가 맞는지 확인
+          name: user.userName || 'N/A', // userName이 비어있는 경우 처리
+          nickname: user.nickname || 'N/A', // nickname이 없을 경우 "N/A" 처리
+          role: user.role || 'N/A', // role 데이터 확인
+          joinDate: user.createAt || 'N/A', // joinDate를 위한 createAt 확인
+        }));
+        this.currentPage = 1;
+        console.log('Mapped users:', this.users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    },
+    updateFilter() {
+      this.fetchUsers(); // 필터 변경 시 데이터를 새로 가져오기
+    },
 
     nextPage() {
       if (this.currentPage < this.totalPages) this.currentPage++;
@@ -124,16 +135,16 @@ updateFilter() {
       if (this.currentPage > 1) this.currentPage--;
     },
     inviteMember() {
-      this.$router.push({ name: "InviteUser" });
+      this.$router.push({ name: 'InviteUser' });
     },
     viewProfile(user) {
-      this.$router.push({ name: "UserProfile", params: { userId: user.id } });
+      this.$router.push({ name: 'UserProfile', params: { userId: user.id } });
     },
   },
   watch: {
-  selectedSort: "updateFilter", // 필터 변경 시 데이터 업데이트
-  searchQuery: "updateFilter", // 검색어 변경 시 데이터 업데이트
-},
+    selectedSort: 'updateFilter', // 필터 변경 시 데이터 업데이트
+    searchQuery: 'updateFilter', // 검색어 변경 시 데이터 업데이트
+  },
   mounted() {
     this.loggedInUserMoeimId = 3;
     this.fetchUsers();

@@ -22,64 +22,62 @@
       :modalMessage="modalMessage"
       @close="closeModal"
     >
-    <template #footer>
-        <button
-          class="btn-primary"
-          @click="closeModal"
-        > 확인</button>
+      <template #footer>
+        <button class="btn-primary" @click="closeModal">확인</button>
       </template>
     </Modal>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import Modal from "@/components/Modal.vue";
+import axios from 'axios';
+import Modal from '@/components/Modal.vue';
+
+axios.defaults.baseURL = 'http://localhost:8088';
+axios.defaults.withCredentials = true;
 
 export default {
   components: { Modal },
   data() {
     return {
       formData: {
-        moeimCode: "",
+        moeimCode: '',
       },
       isModalVisible: false,
-      modalMessage: "",
+      modalMessage: '',
     };
   },
   methods: {
     async joinMoeim() {
-  try {
-    const payload = { moeimCode: this.formData.moeimCode };
+      try {
+        const payload = { moeimCode: this.formData.moeimCode };
 
-    const response = await axios.post("/api/v1/moeim/join", payload, {
-      headers: { "Content-Type": "application/json" },
-    });
+        const response = await axios.post('/api/v1/moeim/join', payload, {
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-    this.modalMessage = response.data || "모임 가입이 완료되었습니다.";
+        this.modalMessage = response.data || '모임 가입이 완료되었습니다.';
         this.isModalVisible = true;
-        this.isSuccess = true; 
+        this.isSuccess = true;
       } catch (error) {
-        console.error("Error joining moeim:", error.response || error.message);
-        this.modalMessage =
-          error.response?.data || "모임 가입에 실패했습니다.";
+        console.error('Error joining moeim:', error.response || error.message);
+        this.modalMessage = error.response?.data || '모임 가입에 실패했습니다.';
         this.isModalVisible = true;
-        this.moeimCode = "";
-        this.isSuccess = false; 
+        this.moeimCode = '';
+        this.isSuccess = false;
       }
-  },
-  closeModal() {
-    this.isModalVisible = false;
+    },
+    closeModal() {
+      this.isModalVisible = false;
 
-    // 성공 시 페이지 이동
-    if (this.isSuccess) {
-      this.$router.push("/main");
-    }
+      // 성공 시 페이지 이동
+      if (this.isSuccess) {
+        this.$router.push('/main');
+      }
+    },
   },
-},
 };
 </script>
-
 
 <style scoped>
 .join-moeim-container {

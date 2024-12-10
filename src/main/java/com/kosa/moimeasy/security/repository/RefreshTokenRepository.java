@@ -1,10 +1,12 @@
-//package com.kosa.moimeasy.security.repository;
-//
-//import org.springframework.data.jpa.repository.JpaRepository;
-//
-//import java.util.Optional;
-//
-//public interface RefreshTokenRepository extends JpaRepository<RefreshToken,Long> {
-//    Optional<RefreshToken> findByToken(String token);
-//    void deleteByToken(String token);
-//}
+package com.kosa.moimeasy.security.repository;
+
+import com.kosa.moimeasy.security.entity.RefreshTokenRedis;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+
+
+@Repository
+public interface RefreshTokenRepository extends CrudRepository<RefreshTokenRedis, Long> {
+    void deleteById(Long userId);
+}

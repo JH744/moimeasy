@@ -5,31 +5,39 @@ import com.kosa.moimeasy.chat.dto.SendMessageDTO;
 import com.kosa.moimeasy.chat.entity.ChatRoom;
 import com.kosa.moimeasy.chat.entity.ChatMessage;
 import com.kosa.moimeasy.chat.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
+@RequestMapping("/api/v1/chat")
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 public class ChatController {
 
-    @Autowired
-    private ChatService chatService;
+    private final ChatService chatService;
 
-    @PostMapping("/api/v1/chat/room")
-    @ResponseBody
-    public ChatRoom createRoom(@RequestBody CreateRoomDTO request) {
-        return chatService.createRoom(request.getRoomName(), request.getRoomType());
+    @PostMapping("/room")
+    public ResponseEntity<ChatRoom> createRoom(@RequestBody CreateRoomDTO request) {
+        return ResponseEntity.ok(chatService.createRoom(request));
     }
 
-    @MessageMapping("/publish/chat.sendMessage")
-    @SendTo("/subscribe/chat")
-    public ChatMessage sendMessage(SendMessageDTO request) {
-        ChatMessage chatMessage = chatService.sendMessage(
-                request.getChatRoomId(), request.getSenderId(), request.getContent(), request.getMessageType());
-        return chatMessage;
+    @PostMapping("/message")
+    public ResponseEntity<ChatMessage> sendMessage(@RequestBody SendMessageDTO request) {
+        return ResponseEntity.ok(chatService.sendMessage(request));
+    }
+
+    @GetMapping("/rooms")
+    public ResponseEntity<List<ChatRoom>> getAllRooms() {
+        return ResponseEntity.ok(chatService.getAllRooms());
     }
 }
+
+
+

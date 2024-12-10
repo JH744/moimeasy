@@ -36,8 +36,10 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
-  name: "Login",
+  name: "LoginView",
   data() {
     return {
       formData: {
@@ -48,7 +50,33 @@ export default {
     };
   },
   methods: {
-    submitLogin() {
+    async submitLogin() {
+      try {
+        const response = await axios.post('/api/v1/login', {
+          email: this.formData.email,
+          password: this.formData.password
+        });
+        const data = response.data;
+        // Access Token 저장
+        localStorage.setItem('accessToken', data.accessToken);
+        alert('로그인 성공!');
+        this.$router.push('/main');
+      } catch (error) {
+        console.error("로그인 실패:", error);
+        alert("로그인에 실패했습니다. 다시 시도해주세요.");
+      }
+    },
+    goToSignup() {
+      this.$router.push("/signup");
+    },
+    forgotPassword() {
+      alert("비밀번호 찾기 기능은 아직 준비 중입니다.");
+    },
+  },
+};
+</script>
+
+    <!-- submitLogin() {
       console.log("로그인 성공:", this.formData.email);
       // 로그인 후 처리 로직 추가 (예: 홈으로 이동)
       this.$router.push("/");
@@ -64,7 +92,7 @@ export default {
     },
   },
 };
-</script>
+</script> -->
 
 <style scoped>
 /* 로그인 스타일 */

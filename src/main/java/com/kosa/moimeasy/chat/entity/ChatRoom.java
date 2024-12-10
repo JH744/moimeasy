@@ -2,35 +2,29 @@ package com.kosa.moimeasy.chat.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
+import java.util.List;
+import com.kosa.moimeasy.user.entity.User;
 
 @Entity
+@Table(name = "chat_rooms")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Table(name = "CHAT_ROOM")
-public class ChatRoom {
+public class ChatRoom extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CHAT_ROOM_ID")
-    private Long chatRoomId;
+    private Long id;
 
-    @Column(name = "ROOM_NAME")
-    private String roomName;
+    @Column(nullable = false)
+    private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ROOM_TYPE", nullable = false)
-    private RoomType roomType;
-
-    @Column(name = "CREATED_AT", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    public enum RoomType {
-        PRIVATE,
-        GROUP
-    }
+    @ManyToMany
+    @JoinTable(
+        name = "chat_room_members",
+        joinColumns = @JoinColumn(name = "chat_room_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> users;
 }
+
+

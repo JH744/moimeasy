@@ -12,8 +12,8 @@ import ScheduleCalendar from './components/ScheduleCalendar.vue';
 
 <style scoped>
 .schedule-section {
-  background-color: #f9f1ff;
-  /* background-color: #ffffff; */
+  /* background-color: #f9f1ff; */
+  background-color: #f8f9fa;
   width: 100%;
   overflow-x: auto;
 }

@@ -1,9 +1,9 @@
 package com.kosa.moimeasy.moeim.entity;
 
 import java.time.LocalDateTime;
-
+import java.util.HashSet;
+import java.util.Set;
 import com.kosa.moimeasy.user.entity.User;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,4 +50,12 @@ public class Moeim {
     private String generateRandomCode() {
         return String.format("%06d", (int) (Math.random() * 1000000)); // 6자리 랜덤 숫자
     }
+
+    // 다대다 관계 설정
+//    @ManyToMany(mappedBy = "moeims")
+//    private Set<User> members = new HashSet<>();
+
+//    @Column(name = "ACCOUNT_NUM", nullable = false)
+//    private String accountNum;
+
 }

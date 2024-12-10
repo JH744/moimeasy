@@ -1,16 +1,17 @@
 package com.kosa.moimeasy.user.controller;
 
 import com.kosa.moimeasy.user.dto.UserDTO;
-import com.kosa.moimeasy.user.service.UserService;
+import com.kosa.moimeasy.user.entity.Role;
 import com.kosa.moimeasy.user.entity.User;
+import com.kosa.moimeasy.user.service.RoleService;
+import com.kosa.moimeasy.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.kosa.moimeasy.exception.ResourceNotFoundException;
+import com.kosa.moimeasy.common.exception.ResourceNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -20,42 +21,34 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-//     @GetMapping
-// public ResponseEntity<List<UserDTO>> getAllUsers() {
-//     List<User> users = userService.findAllUsers(); // 서비스에서 모든 사용자 조회
-//     List<UserDTO> userDTOs = users.stream()
-//             .map(UserDTO::new) // User를 UserDTO로 변환
-//             .toList();
-//     return ResponseEntity.ok(userDTOs);
-// }
+    @Autowired
+    private RoleService roleService;
 
-@GetMapping
-public ResponseEntity<List<UserDTO>> getUsersByMoeimId(@RequestParam Long moeimId) {
-    List<User> users = userService.findByMoeimId(moeimId); // 특정 모임 ID로 사용자 조회
-    List<UserDTO> userDTOs = users.stream()
-            .map(UserDTO::new)
-            .toList();
-    return ResponseEntity.ok(userDTOs);
-}
-
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getUsersByMoeimId(@RequestParam Long moeimId) {
+        List<User> users = userService.findByMoeimId(moeimId);
+        List<UserDTO> userDTOs = users.stream().map(UserDTO::new).toList();
+        return ResponseEntity.ok(userDTOs);
+    }
 
     @PostMapping("/create")
     public User createUser(@RequestBody UserDTO request) {
-        return userService.createUser(request);
+        Role role = roleService.findById(request.getRoleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + request.getRoleId()));
+        return userService.createUser(request, role);
     }
 
     @PutMapping("/update/{userId}")
     public User updateUser(@PathVariable Long userId, @RequestBody UserDTO request) {
-        return userService.updateUser(userId, request);
+        Role role = roleService.findById(request.getRoleId())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + request.getRoleId()));
+        return userService.updateUser(userId, request, role);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
-        
         User user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-        
-        
         UserDTO userDTO = new UserDTO(user);
         return ResponseEntity.ok(userDTO);
     }

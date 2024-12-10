@@ -38,7 +38,7 @@
       </div>
     </div>
     <!-- 사이드바 메뉴 끝 -->
-    <div class="bottom-menu-container">
+    <!-- <div class="bottom-menu-container">
       <div class="more-settings">
         <div class="settings-group">
           <div class="settings-item">
@@ -51,16 +51,16 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup>
-import UsersIcon from '@/assets/usersIcon.svg?url';
-import OutlineIcon from '@/assets/outlineIcon.svg?url';
-import EditIcon from '@/assets/editIcon.svg?url';
-import Notebook from '@/assets/notebook.svg?url';
-import GraphIcon from '@/assets/graphIcon.svg?url';
+import UsersIcon from '@/assets/icons/usersIcon.svg?url';
+import OutlineIcon from '@/assets/icons/outlineIcon.svg?url';
+import EditIcon from '@/assets/icons/editIcon.svg?url';
+import Notebook from '@/assets/icons/notebook.svg?url';
+import GraphIcon from '@/assets/icons/graphIcon.svg?url';
 import PanelMenu from 'primevue/panelmenu';
 import { ref } from 'vue';
 import NavLogo from './NavLogo.vue';
@@ -106,12 +106,12 @@ const items = ref([
       {
         label: '일정조회',
         icon: EditIcon,
-        route: '/schedule',
+        route: '/schedule/calendar',
       },
       {
         label: '모임게시판',
         icon: EditIcon,
-        route: '/board',
+        route: '/schedule/board',
       },
     ],
   },
@@ -150,7 +150,7 @@ const items = ref([
 ]);
 </script>
 
-<style scoped>
+<style>
 .nav-bar,
 .nav-bar * {
   box-sizing: border-box;
@@ -240,11 +240,11 @@ const items = ref([
 .main-menu-container {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   align-items: flex-start;
   justify-content: flex-start;
   position: relative;
-  left: 8px;
+  left: 22px;
   top: 122px;
 }
 
@@ -463,7 +463,10 @@ const items = ref([
 }
 
 .p-panelmenu-panel {
-  border: none !important;
+  /* border: none !important; */
+  padding: 0px;
+  cursor: pointer;
+  width: 190px;
 }
 .menu-title {
   width: 75px;

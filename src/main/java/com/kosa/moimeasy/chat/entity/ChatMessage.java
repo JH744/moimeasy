@@ -3,45 +3,36 @@ package com.kosa.moimeasy.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
+@Table(name = "chat_messages")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Table(name = "CHAT_MESSAGE")
-public class ChatMessage {
+public class ChatMessage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CHAT_MESSAGE_ID")
-    private Long messageId;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "CHAT_ROOM_ID", nullable = false)
+    @JoinColumn(name = "chat_room_id")
     private ChatRoom chatRoom;
 
-    @Column(name = "SENDER_ID", nullable = false)
-    private Long senderId;
+    @Column(nullable = false)
+    private Long sender;
 
-    @Column(name = "CONTENT", nullable = false)
+    @Column(nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "MESSAGE_TYPE", nullable = false)
+    @Column(nullable = false)
     private MessageType messageType;
 
-    @Column(name = "CREATED_AT", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "READ_COUNT", nullable = false)
-    private int readCount = 0;
-
     public enum MessageType {
-        TEXT,
-        IMAGE,
-        FILE
+        TEXT, // 텍스트 메시지
+        IMAGE, // 이미지 메시지
+        FILE // 파일 메시지
     }
 }
+
+
+
