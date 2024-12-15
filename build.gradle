@@ -57,7 +57,7 @@ dependencies {
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis' // Jackson JSON 직렬화 (RefreshToken을 JSON으로 저장하기 위함)
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.6' // Jackson JSON 직렬화 (RefreshToken을 JSON으로 저장하기 위함)
 	implementation 'com.fasterxml.jackson.core:jackson-databind' // JSON 직렬화/역직렬화용
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 

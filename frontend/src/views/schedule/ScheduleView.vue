@@ -1,5 +1,6 @@
 <template>
   <div class="schedule-section">
+    <!-- 일정 캘린더 -->
     <div class="calendar-container">
       <ScheduleCalendar />
     </div>

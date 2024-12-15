@@ -31,6 +31,15 @@
         aria-label="Send Message"
         @click="sendMessage"
       />
+      <Button
+        aria-label="Open Emoji Picker"
+        class="emoji-button"
+        @click="toggleEmojiPicker"
+        >😉</Button
+      >
+      <div v-if="showEmojiPicker" class="emoji-picker-container">
+        <EmojiPicker :native="true" @select="onSelectEmoji" />
+      </div>
     </div>
   </div>
 </template>
@@ -40,7 +49,10 @@ import { ref, onMounted, nextTick } from 'vue';
 import Avatar from 'primevue/avatar';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import EmojiPicker from 'vue3-emoji-picker';
+import 'vue3-emoji-picker/css';
 
+// Messages list
 const messages = ref([
   { sender: 'bot', text: 'Hello! How can I help you today?', time: '10:00 AM' },
   {
@@ -55,7 +67,11 @@ const messages = ref([
   },
 ]);
 
+// Input and emoji picker states
 const newMessage = ref('');
+const showEmojiPicker = ref(false);
+
+// Chat container reference for scrolling
 const chatContainer = ref(null);
 
 const sendMessage = () => {
@@ -77,6 +93,7 @@ const sendMessage = () => {
   newMessage.value = '';
   scrollToBottom();
 
+  // Simulate bot response
   setTimeout(() => {
     messages.value.push({
       sender: 'bot',
@@ -89,6 +106,30 @@ const sendMessage = () => {
     });
     scrollToBottom();
   }, 1000);
+};
+
+const toggleEmojiPicker = (event) => {
+  showEmojiPicker.value = !showEmojiPicker.value;
+};
+
+function onSelectEmoji(emoji) {
+  console.log(emoji);
+  newMessage.value += emoji.i;
+  showEmojiPicker.value = false; // 이모지 선택 후 닫기
+  /*
+    // result
+    { 
+        i: "😚", 
+        n: ["kissing face"], 
+        r: "1f61a", // with skin tone
+        t: "neutral", // skin tone
+        u: "1f61a" // without tone
+    }
+    */
+}
+
+const stopPropagation = (event) => {
+  event.stopPropagation();
 };
 
 const scrollToBottom = () => {
@@ -104,13 +145,13 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 .chat-container {
   display: flex;
   flex-direction: column;
-  max-height: 80vh;
-  max-width: 90%;
-  margin: auto;
+  height: 600px;
+  width: 60%;
+  margin: 35px auto;
   border: 1px solid #ccc;
   border-radius: 8px;
   overflow: hidden;
@@ -119,7 +160,7 @@ onMounted(() => {
 
 .chat-messages {
   flex: 1;
-  overflow-y: auto;
+  overflow: auto;
   padding: 20px;
   background-color: #f0f0f0;
 }
@@ -158,6 +199,7 @@ onMounted(() => {
 
 .chat-input {
   display: flex;
+  align-items: center;
   padding: 10px;
   background-color: #fff;
   border-top: 1px solid #ccc;
@@ -171,5 +213,20 @@ onMounted(() => {
 .p-avatar {
   width: 32px;
   height: 32px;
+}
+
+.emoji-button {
+  margin-left: 10px;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 10px;
 }
 </style>

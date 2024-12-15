@@ -34,6 +34,7 @@
         </div>
       </div>
       <div class="header-box2">
+        <!-- 검색창 -->
         <div class="search-bar-box">
           <input class="search-bar" />
           <img
@@ -62,7 +63,7 @@
             alt="Avatar Icon"
             height="32px"
           />
-          <p>유저407번</p>
+          <p>{{ nickName }}</p>
         </div>
       </div>
     </div>
@@ -70,23 +71,52 @@
 </template>
 
 <script setup>
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import OverlayBadge from 'primevue/overlaybadge';
 import Breadcrumb from 'primevue/breadcrumb';
-import { ref } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
 
+const nickName = ref('');
+const userData = ref('');
 const toast = useToast();
+const route = useRoute();
 
+// 브레드크럼 홈경로 설정
 const home = ref({
   icon: 'pi pi-home',
   route: '/',
 });
-const items = ref([
-  { label: '일정관리', route: '/schedule' },
-  { label: '일정조회', route: '/inputtext' },
-]);
 
+// 브레드크럼 페이지별 경로 설정
+const items = ref([]);
+
+// 라우트 변경 감지 및 업데이트
+const updatePathInfo = () => {
+  items.value = route.matched.map((item) => ({
+    label: item.name,
+    route: item.path,
+  }));
+};
+
+// 초기 경로 설정
+updatePathInfo();
+
+// 라우트 변경 감지용
+watch(
+  () => route.matched,
+  () => {
+    updatePathInfo();
+    console.log('라우트 변경됨:', items.value);
+    const userDataStorage = localStorage.getItem('user');
+    userData.value = userDataStorage ? JSON.parse(userDataStorage) : null;
+    // 닉네임 업데이트
+    nickName.value = userData.value?.nickname || '게스트';
+  },
+  { immediate: true } // 컴포넌트가 처음 마운트될 때도 실행
+);
+//Toast 전달 메시지 설정
 const showSecondary = () => {
   toast.add({
     severity: 'secondary',

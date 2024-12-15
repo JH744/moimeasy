@@ -34,6 +34,6 @@ public class UserDTO {
         this.moeimId = user.getMoeimId();
         this.roleId = user.getRole().getRoleId();
         this.roleName = user.getRole().getRoleName();
-        //this.role = user.getRole() != null ? user.getRole().getRoleName() : null;
+        //this.roleId = user.getRole() != null ? user.getRole().getRoleName() : null;
     }
 }

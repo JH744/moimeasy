@@ -1,4 +1,5 @@
-<template>
+
+<template>
   <div class="moeim-create-container">
     <h2 class="title">모임 생성</h2>
     <form @submit.prevent="createMoeim">
@@ -30,48 +31,50 @@
 </template>
 
 <script>
-import axios from "axios";
-import Modal from "@/components/Modal.vue";
+import axios from 'axios';
+import Modal from '@/components/Modal.vue';
 
 export default {
   components: { Modal },
   data() {
     return {
-      moeimName: "", 
-      isModalVisible: false, 
-      modalMessage: "", 
+      moeimName: '',
+      isModalVisible: false,
+      modalMessage: '',
     };
   },
   methods: {
     async createMoeim() {
       try {
+        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
         const payload = { moeimName: this.moeimName };
 
         // API 호출
-        const response = await axios.post("/api/v1/moeim/create", payload, {
+        const response = await axios.post('/api/v1/moeim/create', payload, {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // 인증 헤더 추가
           },
         });
 
         // 성공 시 모달 표시
         this.modalMessage = `"${response.data.moeimName}" 모임이 생성되었습니다. 모임 코드: ${response.data.moeimCode}`;
         this.isModalVisible = true;
-        this.isSuccess = true; 
-        this.moeimName = ""; // 입력 필드 초기화
+        this.isSuccess = true;
+        this.moeimName = ''; // 입력 필드 초기화
       } catch (error) {
-        console.error("Error creating moeim:", error.response || error.message);
-        this.modalMessage = "모임 생성에 실패했습니다. 다시 시도해주세요.";
+        console.error('Error creating moeim:', error.response || error.message);
+        this.modalMessage = '모임 생성에 실패했습니다. 다시 시도해주세요.';
         this.isModalVisible = true;
-        this.isSuccess = false; 
+        this.isSuccess = false;
       }
     },
     closeModal() {
       this.isModalVisible = false;
       // 성공 시 페이지 이동
-    if (this.isSuccess) {
-      this.$router.push("/main");
-    }
+      if (this.isSuccess) {
+        this.$router.push('/main');
+      }
     },
   },
 };

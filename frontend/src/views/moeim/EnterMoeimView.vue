@@ -50,10 +50,14 @@ export default {
   methods: {
     async joinMoeim() {
       try {
+        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
         const payload = { moeimCode: this.formData.moeimCode };
 
         const response = await axios.post('/api/v1/moeim/join', payload, {
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // 인증 헤더 추가
+          },
         });
 
         this.modalMessage = response.data || '모임 가입이 완료되었습니다.';
@@ -63,7 +67,7 @@ export default {
         console.error('Error joining moeim:', error.response || error.message);
         this.modalMessage = error.response?.data || '모임 가입에 실패했습니다.';
         this.isModalVisible = true;
-        this.moeimCode = '';
+        this.formData.moeimCode = ''; // 입력 필드 초기화
         this.isSuccess = false;
       }
     },

@@ -1,112 +1,265 @@
 <template>
-  <div class="chat-view">
-    <h2>{{ roomName }}</h2>
-    <div class="messages">
-      <div v-for="message in messages" :key="message.id" class="message-item">
-        <strong>{{ message.sender }}:</strong> {{ message.content }}
+  <div class="chat-container">
+    <div class="chat-messages" ref="chatContainer">
+      <div
+        v-for="(message, index) in messages"
+        :key="message.id"
+        :class="['message', message.sender === loggedInUserId ? 'user' : 'bot']"
+      >
+        <Avatar
+          :icon="
+            message.sender === loggedInUserId ? 'pi pi-user' : 'pi pi-android'
+          "
+          :style="{
+            backgroundColor:
+              message.sender === loggedInUserId ? '#2196F3' : '#4CAF50',
+          }"
+          shape="circle"
+        />
+        <div class="message-content">
+          <p>{{ message.content }}</p>
+          <small>{{ message.timestamp }}</small>
+        </div>
       </div>
     </div>
-    <div class="input-container">
-      <input
+    <div class="chat-input">
+      <InputText
         v-model="newMessage"
-        placeholder="메시지를 입력하세요"
+        placeholder="Type a message..."
+        aria-label="Message Input"
         @keyup.enter="sendMessage"
       />
-      <button @click="sendMessage" class="btn-primary">전송</button>
+      <Button
+        icon="pi pi-send"
+        aria-label="Send Message"
+        @click="sendMessage"
+      />
+      <Button
+        aria-label="Open Emoji Picker"
+        class="emoji-button"
+        @click="toggleEmojiPicker"
+        >😉</Button
+      >
+      <div v-if="showEmojiPicker" class="emoji-picker-container">
+        <EmojiPicker :native="true" @select="onSelectEmoji" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import Avatar from 'primevue/avatar';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import EmojiPicker from 'vue3-emoji-picker';
+import { useAuthStore } from '@/stores/auth'; // AuthStore 가져오기
 import axios from 'axios';
+import 'vue3-emoji-picker/css';
 
 export default {
-  data() {
-    return {
-      roomName: '',
-      messages: [],
-      newMessage: '',
-    };
+  props: {
+    roomId: {
+      type: String,
+      required: true,
+    },
   },
-  methods: {
-    async fetchMessages() {
+  setup(props) {
+    const messages = ref([]);
+    const newMessage = ref('');
+    const showEmojiPicker = ref(false);
+    const chatContainer = ref(null);
+    const pollingInterval = ref(null);
+    const lastMessageId = ref(0);
+
+    // AuthStore에서 인증된 사용자 ID 가져오기
+    const authStore = useAuthStore();
+    const loggedInUserId = authStore.user?.userId;
+
+    const fetchMessages = async () => {
       try {
+        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
         const response = await axios.get(
-          `/api/v1/chat/rooms/${this.$route.params.roomId}/messages`
+          `/api/v1/chat/rooms/${props.roomId}/poll-messages`,
+          {
+            params: { lastMessageId: lastMessageId.value },
+            headers: {
+              Authorization: `Bearer ${token}`, // 인증 헤더 추가
+            },
+          }
         );
-        this.messages = response.data;
+        if (response.data.length > 0) {
+          messages.value.push(...response.data);
+          lastMessageId.value = response.data[response.data.length - 1].id;
+          scrollToBottom();
+        }
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
-    },
-    async sendMessage() {
+    };
+
+    const sendMessage = async () => {
+      if (!newMessage.value.trim()) {
+        newMessage.value = '';
+        return;
+      }
+
+      const payload = {
+        chatRoomId: props.roomId,
+        senderId: loggedInUserId,
+        content: newMessage.value,
+        messageType: 'TEXT',
+      };
+
       try {
-        const payload = { content: this.newMessage };
-        await axios.post(
-          `/api/v1/chat/rooms/${this.$route.params.roomId}/messages`,
-          payload
-        );
-        this.messages.push({ sender: 'You', content: this.newMessage });
-        this.newMessage = '';
+        const token = localStorage.getItem('accessToken'); // 토큰 가져오기
+        await axios.post('/api/v1/chat/message', payload, {
+          headers: {
+            Authorization: `Bearer ${token}`, // 인증 헤더 추가
+          },
+        });
+        newMessage.value = '';
+        fetchMessages();
       } catch (error) {
         console.error('Error sending message:', error);
       }
-    },
+    };
+
+    const toggleEmojiPicker = () => {
+      showEmojiPicker.value = !showEmojiPicker.value;
+    };
+
+    const onSelectEmoji = (emoji) => {
+      newMessage.value += emoji.i;
+      showEmojiPicker.value = false;
+    };
+
+    const scrollToBottom = () => {
+      nextTick(() => {
+        if (chatContainer.value) {
+          chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+        }
+      });
+    };
+
+    const startPolling = () => {
+      pollingInterval.value = setInterval(fetchMessages, 1000);
+    };
+
+    const stopPolling = () => {
+      clearInterval(pollingInterval.value);
+    };
+
+    onMounted(() => {
+      console.log('ChatView loaded with roomId:', props.roomId);
+      fetchMessages();
+      startPolling();
+      scrollToBottom();
+    });
+
+    onBeforeUnmount(() => {
+      stopPolling();
+    });
+
+    return {
+      messages,
+      newMessage,
+      showEmojiPicker,
+      chatContainer,
+      sendMessage,
+      toggleEmojiPicker,
+      onSelectEmoji,
+      loggedInUserId,
+    };
   },
   mounted() {
-    this.roomName = `채팅방 #${this.$route.params.roomId}`;
-    this.fetchMessages();
+    console.log('ChatView loaded with roomId:', this.roomId);
   },
 };
 </script>
 
 <style scoped>
-.chat-view {
-  max-width: 600px;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  color: #414651;
-}
-
-.messages {
-  margin-bottom: 20px;
-  max-height: 400px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-}
-
-.message-item {
-  margin-bottom: 10px;
-}
-
-.input-container {
+.chat-container {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  height: 600px;
+  width: 60%;
+  margin: 35px auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f9f9f9;
 }
 
-input {
+.chat-messages {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  overflow: auto;
+  padding: 20px;
+  background-color: #f0f0f0;
 }
 
-.btn-primary {
-  background-color: #7f56d9;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  border: none;
+.message {
+  display: flex;
+  margin-bottom: 15px;
+  align-items: flex-start;
 }
 
-.btn-primary:hover {
-  background-color: rgba(127, 86, 217, 0.8);
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin: 0 10px;
+}
+
+.user .message-content {
+  background-color: #e3f2fd;
+}
+
+.message-content p {
+  margin: 0 0 5px 0;
+}
+
+.message-content small {
+  font-size: 0.8em;
+  color: #888;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+}
+
+.chat-input .p-inputtext {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.p-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.emoji-button {
+  margin-left: 10px;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 10px;
 }
 </style>

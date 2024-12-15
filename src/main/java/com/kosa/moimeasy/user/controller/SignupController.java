@@ -32,6 +32,7 @@ public class SignupController {
     // 회원가입 요청
     @PostMapping
     public ResponseEntity signup(@Valid @RequestBody SignupDTO dto, BindingResult bindingResult) {
+        log.info("Request Data: {}", dto);
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));

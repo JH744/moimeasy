@@ -154,31 +154,32 @@
 
 /* 중요 이벤트 */
 .important-event {
-  background-color: #f44336; /* 빨간색 배경 */
-  border-color: #d32f2f !important;
+  background-color: #ebe2fd;
+  border-color: #7551e9 !important;
   i {
-    color: white !important;
+    color: #7551e9 !important;
   }
 }
 /* 공휴일 이벤트 */
 .holiday-event {
   background-color: #fff4e7;
-
   border: none;
   border-left: 4px solid #ffb85c !important;
   i {
     color: #ffb85c;
   }
 }
-/* .holiday-event {
+.custom-event1 {
   background-color: #ffe2e6;
-
   border: none;
   border-left: 4px solid #fd7385 !important;
   i {
-    color: #fd7385;
+    color: #fd7385 !important;
   }
-} */
+  b {
+    color: #fd7385 !important;
+  }
+}
 
 /* 다이얼로그 커스텀 */
 .fc-direction-ltr {
@@ -206,4 +207,16 @@
   display: flex;
   flex-direction: column;
   height: auto!;
+}
+
+.float-label-container {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .float-label-container {
+    width: 14rem;
+  }
+}
+.select-style {
+  width: 100%;
 }

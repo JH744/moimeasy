@@ -23,6 +23,6 @@ public class SignupDTO {
    private String password;
 
    @NotBlank(message = "연락처는 필수 입력 항목입니다.")
-   @Pattern(regexp = "^[0-9()+\\- ]+$", message = "유효한 연락처를 입력해 주세요.")
+   @Pattern(regexp = "^[0-9+\\-() ]+$", message = "유효한 연락처를 입력해 주세요.")
    private String phone;
 }

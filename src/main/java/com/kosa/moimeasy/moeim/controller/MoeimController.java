@@ -4,8 +4,12 @@ import com.kosa.moimeasy.moeim.dto.MoeimDTO;
 import com.kosa.moimeasy.moeim.entity.Moeim;
 import com.kosa.moimeasy.moeim.service.MoeimService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/api/v1/moeim")
@@ -16,8 +20,13 @@ public class MoeimController {
     private MoeimService moeimService;
 
     @PostMapping("/create")
-    public ResponseEntity<Moeim> createMoeim(@RequestBody MoeimDTO request) {
-        Long userId = 10L; // 로그인된 사용자 ID (추후 인증 정보를 기반으로 설정)
+    public ResponseEntity<Moeim> createMoeim(@RequestBody MoeimDTO request,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = Long.valueOf(userDetails.getUsername()); // UserDetails에서 userId 가져오기
         request.setUserId(userId);
 
         Moeim createdMoeim = moeimService.createMoeim(request);
@@ -25,8 +34,13 @@ public class MoeimController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<String> joinMoeim(@RequestBody MoeimDTO request) {
-        Long userId = 9L; // 로그인된 사용자 ID로 설정
+    public ResponseEntity<String> joinMoeim(@RequestBody MoeimDTO request,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = Long.valueOf(userDetails.getUsername());
         request.setUserId(userId);
 
         try {

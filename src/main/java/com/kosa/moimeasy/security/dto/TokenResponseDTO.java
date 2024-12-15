@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TokenResponseDTO {
     private Long userId;
+    private Long moeimId;
     private String name;
     private String email;
     private String nickname;

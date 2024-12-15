@@ -1,12 +1,12 @@
 <template>
   <div class="login-container">
     <h2 class="title">로그인</h2>
-    <form @submit.prevent="submitLogin">
+    <form @submit.prevent="handleLogin">
       <div class="form-group">
         <label>Email</label>
         <input
           type="email"
-          v-model="formData.email"
+          v-model="form.email"
           placeholder="Enter your email"
           required
         />
@@ -15,15 +15,15 @@
         <label>Password</label>
         <input
           type="password"
-          v-model="formData.password"
+          v-model="form.password"
           placeholder="Enter your password"
           required
         />
       </div>
       <div class="form-options">
         <div class="remember-me">
-          <input type="checkbox" id="remember" v-model="formData.rememberMe" />
-          <label for="remember">이메일 저장</label>
+          <input type="checkbox" id="remember" v-model="form.rememberMe" />
+          <label for="remember">이메일 저장</label>
         </div>
         <a href="#" class="forgot-password" @click.prevent="forgotPassword"
           >비밀번호 찾기</a
@@ -31,68 +31,72 @@
       </div>
       <button type="submit" class="btn-primary">로그인</button>
     </form>
+    <!-- 회원가입 버튼 -->
     <button class="btn-secondary" @click="goToSignup">회원가입</button>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
-  name: "LoginView",
+  name: 'login',
   data() {
     return {
-      formData: {
-        email: "",
-        password: "",
-        rememberMe: false,
+      form: {
+        email: '',
+        password: '',
       },
+      errorMessage: '',
     };
   },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
   methods: {
-    async submitLogin() {
+    async handleLogin() {
+      // 로그인 처리 코드
+      if (this.form.email.trim() === '' || this.form.password.trim() === '') {
+        alert('모든 필드를 채워주세요.');
+        return;
+      }
       try {
-        const response = await axios.post('/api/v1/login', {
-          email: this.formData.email,
-          password: this.formData.password
-        });
-        const data = response.data;
-        // Access Token 저장
-        localStorage.setItem('accessToken', data.accessToken);
-        alert('로그인 성공!');
-        this.$router.push('/main');
+        await this.authStore.login(this.form.email, this.form.password);
+        console.log('로그인 성공'); // 로그인 성공 시 필요한 로직 추가 가능
+
+        // 로그인 후 moiemId 확인
+        if (this.authStore.user.moiemId === null) {
+          // moiemId가 null이면 MoeimSelectView로 이동
+          this.$router.push('/moeim-select');
+        } else {
+          // moiemId가 있으면 메인 페이지로 이동
+          this.$router.push('/main');
+        }
       } catch (error) {
-        console.error("로그인 실패:", error);
-        alert("로그인에 실패했습니다. 다시 시도해주세요.");
+        this.errorMessage = error.message;
       }
     },
-    goToSignup() {
-      this.$router.push("/signup");
+    resetForm() {
+      this.form = {
+        email: '',
+        password: '',
+        rememberMe: false,
+      };
+      this.errorMessage = '';
+      // 리디렉션: 홈으로 이동 (필요 시)
+      this.$router.push('/main');
     },
     forgotPassword() {
-      alert("비밀번호 찾기 기능은 아직 준비 중입니다.");
+      alert('비밀번호 찾기 기능은 아직 준비 중입니다.');
+    },
+    goToSignup() {
+      console.log('회원가입 버튼 클릭');
+      this.$router.push('/signup'); // 회원가입 페이지로 이동
     },
   },
 };
 </script>
-
-    <!-- submitLogin() {
-      console.log("로그인 성공:", this.formData.email);
-      // 로그인 후 처리 로직 추가 (예: 홈으로 이동)
-      this.$router.push("/");
-    },
-    goToSignup() {
-      // 회원가입 페이지로 이동
-      this.$router.push("/signup");
-    },
-    forgotPassword() {
-      // 비밀번호 찾기 로직 추가 (현재는 콘솔 출력)
-      console.log("비밀번호 찾기");
-      alert("비밀번호 찾기 기능은 아직 준비 중입니다.");
-    },
-  },
-};
-</script> -->
 
 <style scoped>
 /* 로그인 스타일 */

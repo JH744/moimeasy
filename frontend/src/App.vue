@@ -1,9 +1,15 @@
 <template>
   <div class="app-layout">
+    <!-- 로딩 스피너 -->
+    <LoadingOverlay />
     <!-- 사이드바 -->
-    <SideBar class="sidebar" :class="{ expanded: uiStore.visible }" />
+    <SideBar
+      class="sidebar"
+      :class="{ expanded: uiStore.visible }"
+      v-if="userData"
+    />
     <!-- 스피드다이얼 영역-->
-    <SideSpeedDial />
+    <SideSpeedDial v-if="userData" />
     <!-- 메인 컨텐츠 -->
     <div class="contents-wrapper">
       <Header class="header" />
@@ -14,7 +20,20 @@
 
 <script setup>
 import { useUIStore } from '@/stores/uiStore';
+import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const userData = ref('');
 const uiStore = useUIStore();
+
+watch(
+  () => route.matched,
+  () => {
+    const userDataStorage = localStorage.getItem('user');
+    userData.value = userDataStorage ? JSON.parse(userDataStorage) : null;
+  },
+  { immediate: true } // 컴포넌트가 처음 마운트될 때도 실행
+);
 </script>
 
 <style>

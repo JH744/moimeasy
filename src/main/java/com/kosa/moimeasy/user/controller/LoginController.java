@@ -49,6 +49,7 @@ public class LoginController {
             // Access Token은 JSON 응답으로 전달
             TokenResponseDTO responseBody = TokenResponseDTO.builder()
                     .userId(tokenResponseDTO.getUserId()) //dto, entity db설정 후 수정 해야할수도 있음
+                    .moeimId(tokenResponseDTO.getMoeimId())//dto, entity db설정 후 수정 해야할수도 있음
                     .name(tokenResponseDTO.getName()) //dto, entity db설정 후 수정 해야할수도 있음
                     .email(tokenResponseDTO.getEmail()) //dto, entity db설정 후 수정 해야할수도 있음
                     .nickname(tokenResponseDTO.getNickname()) //dto, entity db설정 후 수정 해야할수도 있음
@@ -63,34 +64,42 @@ public class LoginController {
 
         }
     }
-
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = null;
-        if (request.getCookies() != null) {
-            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
-                if ("refresh_token".equals(cookie.getName())) {
-                    refreshToken = cookie.getValue();
-                    break;
+        try {
+            // Refresh Token 쿠키 확인
+            String refreshToken = null;
+            if (request.getCookies() != null) {
+                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                    if ("refresh_token".equals(cookie.getName())) {
+                        refreshToken = cookie.getValue();
+                        break;
+                    }
                 }
             }
-        }
 
-        if (refreshToken != null && !refreshToken.isEmpty()) {
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                return ResponseEntity.badRequest().body("Refresh Token이 필요합니다.");
+            }
+
+            // Refresh Token 로그아웃 처리
             loginService.logout(refreshToken);
 
-            // Refresh Token 쿠키 삭제 (SameSite 속성 포함)
+            // Refresh Token 쿠키 삭제
             ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                     .httpOnly(true)
-                    .secure(true) // HTTPS 사용 시 true
+                    .secure(false) // HTTPS 환경에서는 true로 변경
                     .path("/api/v1/refresh-token")
-                    .maxAge(0)
-                    .sameSite("Strict")
+                    .maxAge(0)// 즉시 만료
+                    .sameSite("None") // None으로 설정하여 모든 요청에 쿠키 포함  수정 전 :Strict
                     .build();
             response.addHeader("Set-Cookie", deleteCookie.toString());
 
-            return ResponseEntity.ok().body("로그아웃 되었습니다.");
+            return ResponseEntity.ok("로그아웃 성공");
+        } catch (Exception e) {
+            log.error("로그아웃 처리 중 오류 발생: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 중 오류가 발생했습니다.");
         }
-        return ResponseEntity.badRequest().body("Refresh Token이 필요합니다.");
     }
 
     @PostMapping("/refresh-token")
@@ -130,6 +139,7 @@ public class LoginController {
             // Access Token은 JSON 응답으로 전달
             TokenResponseDTO responseBody = TokenResponseDTO.builder()
                     .userId(tokenResponseDTO.getUserId()) //dto, entity db설정 후 수정 해야할수도 있음
+                    .moeimId(tokenResponseDTO.getMoeimId()) //dto, entity db설정 후 수정 해야할수도 있음
                     .name(tokenResponseDTO.getName()) //dto, entity db설정 후 수정 해야할수도 있음
                     .email(tokenResponseDTO.getEmail()) //dto, entity db설정 후 수정 해야할수도 있음
                     .nickname(tokenResponseDTO.getNickname()) //dto, entity db설정 후 수정 해야할수도 있음

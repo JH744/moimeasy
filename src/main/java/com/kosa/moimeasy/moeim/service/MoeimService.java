@@ -42,7 +42,7 @@ public class MoeimService {
         Moeim moeim = new Moeim();
         moeim.setMoeimName(request.getMoeimName());
         moeim.setUser(user); // User 객체를 설정
-        moeim.setAccountNum(generateVirtualAccountNumber());
+        moeim.setAccountNumber(generateVirtualAccountNumber());
         moeim.setMoeimCode(generateMoeimCode());
         Moeim savedMoeim = moeimRepository.save(moeim);
 

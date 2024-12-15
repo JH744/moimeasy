@@ -46,20 +46,20 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 
-    // memberId 기반으로 사용자 로드하는 메서드
+    // userId 기반으로 사용자 로드하는 메서드
     @Transactional
     public UserDetails loadUserById(Long userId) throws UsernameNotFoundException {
-        log.debug("Attempting to load user by memberId: {}", userId);
+        log.debug("Attempting to load user by userId: {}", userId);
         User user = memberRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("User not found with memberId: {}", userId);
-                    return new UsernameNotFoundException("User not found with memberId: " + userId);
+                    log.error("User not found with userId: {}", userId);
+                    return new UsernameNotFoundException("User not found with userId: " + userId);
                 });
 
         log.debug("User found: {}", user.getUserId());
 
         return new org.springframework.security.core.userdetails.User(
-                String.valueOf(user.getUserId()), // memberId를 username으로 사용
+                String.valueOf(user.getUserId()), // userId를 username으로 사용
                 user.getPassword(), // 사용자의 비밀번호
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getRole().getRoleName()))
         );

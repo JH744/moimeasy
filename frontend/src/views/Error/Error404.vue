@@ -13,7 +13,7 @@
 <style scoped>
 .error-container {
   width: 100%;
-  height: 80vh;
+  height: 90vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -26,21 +26,21 @@
 
 h1 {
   font-size: 120px;
-  color: #0d1134;
+  color: var(--main-color);
   margin: 0;
   font-weight: bold;
 }
 
 p {
   font-size: 24px;
-  color: #0d1134;
+  color: var(--p-primary-700);
   margin: 20px 0 40px;
 }
 
 .home-button {
   display: inline-block;
   padding: 15px 30px;
-  background-color: #0d1134;
+  background-color: var(--p-primary-500);
   color: white;
   text-decoration: none;
   border-radius: 5px;
@@ -49,6 +49,6 @@ p {
 }
 
 .home-button:hover {
-  background-color: #0d1134;
+  background-color: var(--main-color);
 }
 </style>

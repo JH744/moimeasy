@@ -20,7 +20,7 @@ public class InvitationController {
     @PostMapping(value = "/send", consumes = "application/json", produces = "application/json")
     public String sendInvitation(@RequestBody EmailRequest request) {
         
-        Long userId = 5L; 
+        Long userId = 2L;
         invitationService.sendInvitation(userId, request, request.getHtmlContent());
         return "초대가 성공적으로 전송되었습니다.";
     }

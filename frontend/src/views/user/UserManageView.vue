@@ -107,16 +107,18 @@ export default {
   methods: {
     async fetchUsers() {
       try {
+        console.log('Fetching users for moeimId:', this.loggedInUserMoeimId);
         const response = await axios.get('/api/v1/users', {
           params: { moeimId: this.loggedInUserMoeimId }, // 로그인된 사용자의 moeimId를 서버에 전달
+          withCredentials: true,
         });
         console.log('Response data:', response.data);
         this.users = response.data.map((user) => ({
-          id: user.userId, // userId가 맞는지 확인
-          name: user.userName || 'N/A', // userName이 비어있는 경우 처리
-          nickname: user.nickname || 'N/A', // nickname이 없을 경우 "N/A" 처리
-          role: user.role || 'N/A', // role 데이터 확인
-          joinDate: user.createAt || 'N/A', // joinDate를 위한 createAt 확인
+          id: user.userId,
+          name: user.userName || 'N/A',
+          nickname: user.nickname || 'N/A',
+          role: user.role || 'N/A',
+          joinDate: user.createAt || 'N/A',
         }));
         this.currentPage = 1;
         console.log('Mapped users:', this.users);
@@ -125,7 +127,7 @@ export default {
       }
     },
     updateFilter() {
-      this.fetchUsers(); // 필터 변경 시 데이터를 새로 가져오기
+      this.fetchUsers();
     },
 
     nextPage() {

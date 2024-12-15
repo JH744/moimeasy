@@ -11,25 +11,25 @@
         <PanelMenu :model="items" class="pannel-item">
           <template #item="{ item }">
             <!-- 대쉬보드 메뉴 -->
-            <router-link
-              v-if="item.route"
-              v-slot="{ href, navigate }"
-              :to="item.route"
-              custom
-            >
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
               <a v-ripple class="dropmenu-item" :href="href" @click="navigate">
                 <img class="icon-dashboard" :src="item.icon" width="15px" />
                 <span class="menu-title">{{ item.label }}</span>
               </a>
             </router-link>
-            <!-- 기타 메뉴 -->
+            <!-- 로그아웃 및 기타 -->
             <a
-              v-else
+              v-else-if="item.command"
               v-ripple
               class="dropmenu-item"
-              :href="item.url"
-              :target="item.target"
+              href="#"
+              @click.prevent="item.command"
             >
+              <img class="icon-dashboard" :src="item.icon" width="15px" />
+              <span class="menu-title">{{ item.label }}</span>
+            </a>
+            <!-- 기타 메뉴 -->
+            <a v-else v-ripple class="dropmenu-item" :href="item.url" :target="item.target">
               <img class="icon-dashboard" :src="item.icon" width="15px" />
               <span class="menu-title">{{ item.label }}</span>
             </a>
@@ -63,7 +63,12 @@ import Notebook from '@/assets/icons/notebook.svg?url';
 import GraphIcon from '@/assets/icons/graphIcon.svg?url';
 import PanelMenu from 'primevue/panelmenu';
 import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth'; // Pinia auth 스토어
 import NavLogo from './NavLogo.vue';
+import ChatIcon from '@/assets/icons/chatIcon.svg?url';
+
+// Pinia auth 스토어 사용
+const authStore = useAuthStore();
 
 //사이드바 메뉴구성 아이템
 const items = ref([
@@ -81,6 +86,14 @@ const items = ref([
         icon: OutlineIcon,
         route: '/theming/unstyled',
       },
+      {
+        label: '로그아웃',
+        icon: OutlineIcon,
+        command: () => {
+          console.log('로그아웃 실행'); // 디버깅 로그
+          authStore.logout(); // Pinia auth 스토어의 logout 호출
+        },
+      },
     ],
   },
   {
@@ -88,14 +101,14 @@ const items = ref([
     icon: UsersIcon,
     items: [
       {
-        label: '회원관리-1',
+        label: '회원관리',
         icon: UsersIcon,
-        url: 'https://vuejs.org/', // 외부 링크는 url을 사용
+        route: '/user-manage',
       },
       {
-        label: '회원관리-2',
+        label: '초대목록',
         icon: UsersIcon,
-        route: '/login', // 내부 링크는 route를 사용
+        route: '/invitation-list',
       },
     ],
   },
@@ -120,14 +133,14 @@ const items = ref([
     icon: Notebook,
     items: [
       {
-        label: '회비관리-1',
+        label: '납부내역',
         icon: Notebook,
-        url: 'https://vuejs.org/',
+        route: '/remittance-list',
       },
       {
-        label: '회비관리-2',
+        label: '거래내역',
         icon: Notebook,
-        url: 'https://vuejs.org/',
+        route: '/transaction-list',
       },
     ],
   },
@@ -136,17 +149,28 @@ const items = ref([
     icon: GraphIcon,
     items: [
       {
-        label: '통계-1',
+        label: '카테고리별',
         icon: GraphIcon,
-        url: 'https://vuejs.org/',
+        route: '/category',
       },
       {
-        label: '통계-2',
+        label: '월별',
         icon: GraphIcon,
-        url: 'https://vuejs.org/',
+        route: '/category',
       },
     ],
   },
+  {
+      label: '채팅',
+      icon: ChatIcon,
+      items: [
+        {
+          label: '채팅목록',
+          icon: ChatIcon,
+          url: '/chat-room-list',
+        },
+      ],
+    },
 ]);
 </script>
 
@@ -196,16 +220,20 @@ const items = ref([
   top: 0px;
   transition: all 0.2s;
 }
+
 .logo-background:hover {
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 15px rgba(129, 85, 165, 0.3); /* 블러 그림자 효과 */
+  box-shadow: 0 4px 15px rgba(129, 85, 165, 0.3);
+  /* 블러 그림자 효과 */
 }
+
 .logo-background:active {
   cursor: pointer;
   border: none;
   background-color: #f8f3fb;
-  box-shadow: 0 4px 15px rgba(62, 32, 84, 0.3); /* 블러 그림자 효과 */
+  box-shadow: 0 4px 15px rgba(62, 32, 84, 0.3);
+  /* 블러 그림자 효과 */
 }
 
 .logo-icon {
@@ -428,37 +456,45 @@ const items = ref([
 }
 
 .dropmenu-item {
-  display: flex; /* Flexbox 사용 */
-  align-items: center; /* 수직 중앙 정렬 */
+  display: flex;
+  /* Flexbox 사용 */
+  align-items: center;
+  /* 수직 중앙 정렬 */
   gap: 10px;
   border-radius: 8px;
   padding: 8px 8px 8px 24px;
   width: 130px;
   border: none;
   height: 53px;
-  cursor: pointer; /* 포인터 커서 */
+  cursor: pointer;
+  /* 포인터 커서 */
   color: #181616;
   text-align: left;
   font-family: 'Poppins-Medium', sans-serif;
   font-size: 16px;
   line-height: 16px;
   font-weight: 500;
-  padding: 0.5rem 1rem; /* px-4, py-2에 해당 */
+  padding: 0.5rem 1rem;
+  /* px-4, py-2에 해당 */
 }
 
 .pannel-item {
-  width: 100%; /* 기본적으로 전체 너비 */
+  width: 100%;
+  /* 기본적으로 전체 너비 */
 }
 
 @media (min-width: 768px) {
+
   /* md 브레이크포인트: 768px 이상 */
   .pannel-item {
     width: 13rem;
   }
 }
+
 @media (prefers-color-scheme: dark) {
   .pannel-item {
-    color: #ffffff; /* 다크 모드에서 텍스트 색상 (surface-0의 예) */
+    color: #ffffff;
+    /* 다크 모드에서 텍스트 색상 (surface-0의 예) */
   }
 }
 
@@ -468,6 +504,7 @@ const items = ref([
   cursor: pointer;
   width: 190px;
 }
+
 .menu-title {
   width: 75px;
 }

@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -54,7 +55,7 @@ public class SignUpServiceImpl implements SignUpService {
             // 여기서 역할 설정 부분
 //            user.setRole(user.getRole());
                 user.setRole(userRole);
-            user.setCreateAt(LocalDateTime.now());
+                user.setAccountNumber(generateVirtualAccountNumber()); // 가상 번호 저장
 
             memberRepository.save(user);
             log.info("회원가입 성공: " + user.toString());
@@ -73,5 +74,15 @@ public class SignUpServiceImpl implements SignUpService {
     @Override
     public boolean isNicknameExists(String nickname) {
         return memberRepository.existsByNickname(nickname);
+    }
+
+    // 가상 계좌 번호 생성 메서드
+    private String generateVirtualAccountNumber() {
+        Random random = new Random();
+        StringBuilder accountNum = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            accountNum.append(random.nextInt(10));
+        }
+        return accountNum.toString();
     }
 }

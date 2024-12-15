@@ -1,7 +1,10 @@
 package com.kosa.moimeasy.chat.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import com.kosa.moimeasy.user.entity.User;
 
@@ -16,15 +19,17 @@ public class ChatRoom extends BaseTimeEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String name; // 채팅방 이름
 
-    @ManyToMany
-    @JoinTable(
-        name = "chat_room_members",
-        joinColumns = @JoinColumn(name = "chat_room_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> users;
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // members 필드는 필요 없으면 응답에서 제외
+    private List<ChatRoomUser> members = new ArrayList<>();
+
+    @Column(nullable = false)
+    private Long createdBy; // 채팅방 생성자
 }
+
+
+
 
 

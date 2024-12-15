@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendMessageDTO {
-    private Long chatRoomId;   // 채팅방 ID
-    private Long senderId;     // 메시지 발신자 ID
-    private String content;    // 메시지 내용
-    private MessageType messageType; // 메시지 유형 (TEXT, IMAGE, FILE)
+    private Long chatRoomId;
+    private Long senderId;
+    private String content;
+    private String messageType; // TEXT, IMAGE, VIDEO
+    private String fileUrl; // 파일 경로
 }

@@ -40,25 +40,40 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User updateUser(Long userId, UserDTO request, Role role) {
+    public User updateUser(Long userId, UserDTO request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        user.setUserName(request.getUserName());
-        user.setPassword(request.getPassword());
-        user.setAddress(request.getAddress());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
-        user.setNickname(request.getNickname());
-        user.setMoeimId(request.getMoeimId());
-        user.setRole(role);
+
+        // Role은 변경하지 않음
+        if (request.getUserName() != null) {
+            user.setUserName(request.getUserName());
+        }
+        if (request.getPassword() != null) {
+            user.setPassword(request.getPassword());
+        }
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getNickname() != null) {
+            user.setNickname(request.getNickname());
+        }
+        if (request.getMoeimId() != null) {
+            user.setMoeimId(request.getMoeimId());
+        }
+
         return userRepository.save(user);
     }
+
+
 
     public Optional<User> findById(Long userId) {
         return userRepository.findById(userId);
     }
 
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
-    }
 }
