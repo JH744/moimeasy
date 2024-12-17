@@ -21,10 +21,11 @@
         />
       </div>
       <div class="form-options">
-        <div class="remember-me">
-          <input type="checkbox" id="remember" v-model="form.rememberMe" />
-          <label for="remember">이메일 저장</label>
-        </div>
+    <div>
+      <a href="#" class="forgot-password" @click.prevent="forgotId"
+          >아이디 찾기</a
+        >
+    </div>
         <a href="#" class="forgot-password" @click.prevent="forgotPassword"
           >비밀번호 찾기</a
         >
@@ -86,6 +87,9 @@ export default {
       this.errorMessage = '';
       // 리디렉션: 홈으로 이동 (필요 시)
       this.$router.push('/main');
+    },
+    forgotId() {
+      alert('아이디 찾기 기능은 아직 준비 중입니다.');
     },
     forgotPassword() {
       alert('비밀번호 찾기 기능은 아직 준비 중입니다.');

@@ -1,10 +1,14 @@
 <template>
+  <!-- 사용자 프로필 컨테이너 -->
   <div class="profile-container">
-    
+    <Toast />
+    <ConfirmDialog></ConfirmDialog>
     <form v-if="user">
+      <!-- 프로필 이미지 업로드 -->
       <div class="form-group">
         <label for="userProfile">프로필이미지</label>
         <div class="profile-box">
+          <!-- 이미지 아바타 컴포넌트 -->
           <Avatar
             :icon="src ? undefined : 'pi pi-user'"
             :image="src || undefined"
@@ -12,6 +16,7 @@
             size="xlarge"
             shape="circle"
           />
+          <!-- 파일 업로드 버튼 -->
           <FileUpload
             mode="basic"
             @select="onFileSelect"
@@ -21,65 +26,147 @@
             class="p-button-outlined"
           />
         </div>
-
-        <!-- <input id="username" v-model="user.userName" type="text" readonly /> -->
       </div>
+
+      <!-- 사용자 정보 입력 필드 -->
       <div class="form-group">
         <label for="username">유저명</label>
         <input id="username" v-model="user.userName" type="text" readonly />
       </div>
+
+      <div class="form-group">
+        <label for="nickname">닉네임</label>
+        <input id="nickname" v-model="user.nickname" type="text" readonly />
+      </div>
+
       <div class="form-group">
         <label for="email">이메일</label>
         <input id="email" v-model="user.email" type="email" readonly />
       </div>
+
       <div class="form-group">
         <label for="phone">전화번호</label>
         <input id="phone" v-model="user.phone" type="text" readonly />
       </div>
-      <div class="form-group">
-        <label for="address">주소</label>
-        <input id="address" v-model="user.address" type="text" readonly />
-      </div>
+
       <div class="form-group">
         <label for="createAt">가입 날짜</label>
         <input id="createAt" v-model="user.createAt" type="text" readonly />
       </div>
     </form>
+
+    <!-- 사용자 정보가 없는 경우 표시 -->
     <div v-else>사용자 정보를 불러오는 중입니다...</div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
+import { ref, uploadBytes } from 'firebase/storage';
+import { firebaseStorage } from '@/firebase/firebaseConfig';
 
 export default {
+  setup() {
+    const confirm = useConfirm(); // useConfirm 선언
+    const toast = useToast(); // useToast 선언
+
+    return { confirm, toast };
+  },
   data() {
     return {
-      user: null,
-      src: null,
+      user: null, // 사용자 데이터
+      src: null, // 이미지 소스
+      profileImage: {},
     };
   },
   mounted() {
     const userId = this.$route.params.userId; // URL에서 userId 가져오기
-    this.loadUserData(userId);
+    this.loadUserData(userId); // 사용자 데이터 불러오기
   },
   methods: {
+    // 사용자 데이터를 API로 불러오는 메서드
     async loadUserData(userId) {
       try {
-        const response = await axios.get(`/api/v1/users/${userId}`); // API 호출
+        const response = await axios.get(`/api/v1/users/${userId}`);
         this.user = response.data; // 응답 데이터를 user에 저장
       } catch (error) {
         console.error('사용자 정보를 불러오는데 실패했습니다:', error);
         alert('사용자 정보를 불러오는데 실패했습니다.');
       }
     },
+
+    // 파일 업로드 시 실행되는 메서드
     onFileSelect(event) {
       const file = event.files[0];
       const reader = new FileReader();
+
+      // 파일을 읽고 이미지 소스로 설정
       reader.onload = async (e) => {
         this.src = e.target.result;
       };
       reader.readAsDataURL(file);
+      this.profileSaveConfirm(file); // 확인창 메서드 호출
+    },
+    // 확인창 메서드 (PrimeVue의 useConfirm 사용)
+    profileSaveConfirm(file) {
+      this.confirm.require({
+        message: '새 프로필 이미지를 등록하시겠어요?',
+        header: '프로필 등록',
+        icon: 'pi pi-id-card',
+        rejectProps: {
+          label: 'Cancel',
+          severity: 'secondary',
+          outlined: true,
+        },
+        acceptProps: {
+          label: 'Save',
+        },
+        accept: () => {
+          // 프로필 저장 api추가
+          this.handleFileUpload(file); // 파이어베이스 스토리지 저장
+          // 저장 완료 시 토스트메시지 띄우기
+          this.toast.add({
+            severity: 'success',
+            summary: '등록 완료',
+            detail: '프로필 이미지가 등록되었습니다.',
+            life: 3000,
+          });
+        },
+        reject: () => {},
+      });
+    },
+    // 파이어베이스 파일업로드
+    async handleFileUpload(file) {
+      if (!file) return;
+      this.currentFile = file.name;
+      // Firebase 스토리지 경로 설정
+      const storageRef = ref(
+        firebaseStorage,
+        `/moeimeasy/profile/${file.name}`
+      );
+      // 파일 업로드
+      try {
+        let uploadedFile = await uploadBytes(storageRef, file);
+        let uploadedFileUrl = uploadedFile.metadata.fullPath;
+        this.fetchUpdateProfileImage(uploadedFileUrl);
+      } catch (error) {
+        console.error('파일 업로드 실패', error);
+      }
+    },
+    // DB에 profileImage 저장
+    async fetchUpdateProfileImage(uploadedFileUrl) {
+      this.profileImage = {
+        profileImage: uploadedFileUrl,
+      };
+      try {
+        const response = await axios.put(
+          `/api/v1/users/update/${this.user.userId}`,
+          this.profileImage
+        );
+      } catch (error) {
+        console.error('저장실패', error);
+      }
     },
   },
 };
@@ -88,7 +175,7 @@ export default {
 <style scoped>
 .profile-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 10px auto;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;

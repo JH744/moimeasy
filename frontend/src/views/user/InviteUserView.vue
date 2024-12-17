@@ -62,72 +62,70 @@ export default {
     async sendInvitation() {
       // HTML 템플릿 구성
       const emailHtmlContent = `
-        <!DOCTYPE html>
-        <html lang="ko">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>MoeimEasy 초대장</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background-color: #f7f7f7;
-              color: #333;
-              margin: 0;
-              padding: 0;
-            }
-            .invite-container {
-              max-width: 600px;
-              margin: 40px auto;
-              padding: 20px;
-              background: #fff;
-              border-radius: 12px;
-              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-              text-align: center;
-            }
-            .invite-header {
-              
-              padding: 20px;
-              border-top-left-radius: 12px;
-              border-top-right-radius: 12px;
-            }
-            .invite-header h1 {
-              margin: 0;
-              font-size: 28px;
-              background-color: #7f56d9;
-              color: #fff;
-            }
-            .invite-body {
-              padding: 20px;
-            }
-            .invite-body p {
-              font-size: 16px;
-              line-height: 1.6;
-            }
-            .footer {
-              margin-top: 30px;
-              font-size: 12px;
-              color: #888;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="invite-container">
-            <div class="invite-header">
-              <h1>MoeimEasy에서 초대합니다!</h1>
-            </div>
-            <div class="invite-body">
-              <p>${this.formData.message}</p>
-            </div>
-            <div class="footer">
-              <p>이 이메일은 MoeimEasy의 초대 이메일입니다. 수신을 원하지 않는다면 무시하세요.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>MoeimEasy 초대장</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f7f7f7;
+          color: #333;
+          margin: 0;
+          padding: 0;
+        }
+        .invite-container {
+          max-width: 600px;
+          margin: 40px auto;
+          padding: 20px;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          text-align: center;
+        }
+        .invite-header h1 {
+          margin: 0;
+          font-size: 28px;
+          background-color: #7f56d9;
+          color: #fff;
+          padding: 20px;
+          border-top-left-radius: 12px;
+          border-top-right-radius: 12px;
+        }
+        .invite-body {
+          padding: 20px;
+        }
+        .footer {
+          margin-top: 30px;
+          font-size: 12px;
+          color: #888;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invite-container">
+        <div class="invite-header">
+          <h1>MoeimEasy에서 초대합니다!</h1>
+        </div>
+        <div class="invite-body">
+          <p>${this.formData.message}</p>
+        </div>
+        <div class="footer">
+          <p>이 이메일은 MoeimEasy의 초대 이메일입니다. 수신을 원하지 않는다면 무시하세요.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
 
       try {
+        const token = localStorage.getItem('accessToken'); // 인증 토큰 가져오기
+        if (!token) {
+          throw new Error('인증 토큰이 없습니다.');
+        }
+
         await axios.post(
           '/api/v1/invitations/send',
           {
@@ -136,18 +134,22 @@ export default {
             htmlContent: emailHtmlContent,
           },
           {
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`, // 토큰 추가
+            },
           }
         );
         this.isModalVisible = true; // 초대 성공 시 모달 활성화
       } catch (error) {
         console.error(
           'Error sending invitation:',
-          error.response || error.message
+          error.response?.data || error.message
         );
         alert('초대 전송에 실패했습니다.');
       }
     },
+
     redirectToInvitationList() {
       this.isModalVisible = false; // 모달 닫기
       this.$router.push('/invitation-list'); // 초대 목록 페이지로 이동

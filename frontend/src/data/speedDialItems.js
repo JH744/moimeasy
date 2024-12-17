@@ -2,7 +2,7 @@
 import { useToast } from 'primevue/usetoast';
 import { useUIStore } from '@/stores/uiStore';
 
-const useSpeedDialItems = () => {
+const useSpeedDialItems = (router) => {
   const toast = useToast();
   const uiStore = useUIStore();
 
@@ -11,12 +11,7 @@ const useSpeedDialItems = () => {
       label: 'Add',
       icon: 'pi pi-pencil',
       command: () => {
-        toast.add({
-          severity: 'info',
-          summary: 'Add',
-          detail: 'Data Added',
-          life: 3000,
-        });
+        router.push('/schedule/board-post');
       },
     },
     {

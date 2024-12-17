@@ -48,12 +48,12 @@
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import Avatar from 'primevue/avatar';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import EmojiPicker from 'vue3-emoji-picker';
-import { useAuthStore } from '@/stores/auth'; // AuthStore 가져오기
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 import 'vue3-emoji-picker/css';
 
@@ -72,20 +72,17 @@ export default {
     const pollingInterval = ref(null);
     const lastMessageId = ref(0);
 
-    // AuthStore에서 인증된 사용자 ID 가져오기
     const authStore = useAuthStore();
     const loggedInUserId = authStore.user?.userId;
 
     const fetchMessages = async () => {
       try {
-        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
+        const token = localStorage.getItem('accessToken');
         const response = await axios.get(
           `/api/v1/chat/rooms/${props.roomId}/poll-messages`,
           {
             params: { lastMessageId: lastMessageId.value },
-            headers: {
-              Authorization: `Bearer ${token}`, // 인증 헤더 추가
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         if (response.data.length > 0) {
@@ -112,11 +109,9 @@ export default {
       };
 
       try {
-        const token = localStorage.getItem('accessToken'); // 토큰 가져오기
+        const token = localStorage.getItem('accessToken');
         await axios.post('/api/v1/chat/message', payload, {
-          headers: {
-            Authorization: `Bearer ${token}`, // 인증 헤더 추가
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         newMessage.value = '';
         fetchMessages();
@@ -150,6 +145,7 @@ export default {
       clearInterval(pollingInterval.value);
     };
 
+    // Lifecycle hooks
     onMounted(() => {
       console.log('ChatView loaded with roomId:', props.roomId);
       fetchMessages();
@@ -161,6 +157,14 @@ export default {
       stopPolling();
     });
 
+    watch(
+      () => props.roomId,
+      (newRoomId) => {
+        console.log('Room changed:', newRoomId);
+        fetchMessages();
+      }
+    );
+
     return {
       messages,
       newMessage,
@@ -171,9 +175,6 @@ export default {
       onSelectEmoji,
       loggedInUserId,
     };
-  },
-  mounted() {
-    console.log('ChatView loaded with roomId:', this.roomId);
   },
 };
 </script>

@@ -26,6 +26,7 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.2.4",
     "quill": "^2.0.3",
+    "quill-delta-to-html": "^0.12.1",
     "sockjs-client": "^1.6.1",
     "vee-validate": "^4.14.7",
     "vite-svg-loader": "^5.1.0",

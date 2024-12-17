@@ -34,15 +34,11 @@
           <td>
             <button class="btn-name" @click="viewProfile(user)">
               {{ user.name }}
-              <!-- user.name은 매핑에서 정확히 확인 -->
             </button>
           </td>
           <td>{{ user.nickname }}</td>
-          <!-- user.nickname이 제대로 나오는지 확인 -->
           <td>{{ user.role }}</td>
-          <!-- user.role이 'user'나 'admin'으로 표시되는지 확인 -->
           <td>{{ user.joinDate }}</td>
-          <!-- user.joinDate 확인 -->
         </tr>
       </tbody>
     </table>
@@ -58,10 +54,8 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
-
-axios.defaults.baseURL = 'http://localhost:8088';
-axios.defaults.withCredentials = true;
 
 export default {
   data() {
@@ -78,6 +72,10 @@ export default {
       currentPage: 1,
       rowsPerPage: 5,
     };
+  },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
   },
   computed: {
     totalPages() {
@@ -103,33 +101,38 @@ export default {
       return this.sortedUsers.slice(start, start + this.rowsPerPage);
     },
   },
-
   methods: {
     async fetchUsers() {
       try {
-        console.log('Fetching users for moeimId:', this.loggedInUserMoeimId);
-        const response = await axios.get('/api/v1/users', {
-          params: { moeimId: this.loggedInUserMoeimId }, // 로그인된 사용자의 moeimId를 서버에 전달
-          withCredentials: true,
+        const token = this.authStore.accessToken;
+        const moeimId = this.authStore.user?.moeimId;
+
+        if (!moeimId) {
+          throw new Error('moeimId is not available in authStore.');
+        }
+
+        const response = await axios.get('/api/v1/users/members', {
+          params: { moeimId },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('Response data:', response.data);
+        console.log('API Response Data:', response.data);
+
         this.users = response.data.map((user) => ({
-          id: user.userId,
-          name: user.userName || 'N/A',
-          nickname: user.nickname || 'N/A',
-          role: user.role || 'N/A',
-          joinDate: user.createAt || 'N/A',
+          id: user.userId, // userId 필드 확인
+          name: user.userName || user.name || 'N/A', // userName 또는 name 확인
+          nickname: user.nickname || 'N/A', // 닉네임 확인
+          role: user.roleName || user.role || 'N/A', // roleName 또는 role 확인
+          joinDate:
+            user.createAt || user.joinDate
+              ? new Date(user.createAt || user.joinDate).toLocaleDateString()
+              : 'N/A', // 날짜 필드 확인
         }));
+
         this.currentPage = 1;
-        console.log('Mapped users:', this.users);
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     },
-    updateFilter() {
-      this.fetchUsers();
-    },
-
     nextPage() {
       if (this.currentPage < this.totalPages) this.currentPage++;
     },
@@ -137,19 +140,29 @@ export default {
       if (this.currentPage > 1) this.currentPage--;
     },
     inviteMember() {
-      this.$router.push({ name: 'InviteUser' });
+      this.$router.push({ name: '회원초대' });
     },
     viewProfile(user) {
-      this.$router.push({ name: 'UserProfile', params: { userId: user.id } });
+      if (!user.id) {
+        console.error('User ID is missing');
+        return;
+      }
+      this.$router.push({
+        name: '회원프로필',
+        params: { userId: user.id.toString() },
+      });
     },
   },
   watch: {
-    selectedSort: 'updateFilter', // 필터 변경 시 데이터 업데이트
-    searchQuery: 'updateFilter', // 검색어 변경 시 데이터 업데이트
+    selectedSort: 'fetchUsers',
+    searchQuery: 'fetchUsers',
   },
   mounted() {
-    this.loggedInUserMoeimId = 3;
-    this.fetchUsers();
+    if (this.authStore.user?.moeimId) {
+      this.fetchUsers();
+    } else {
+      console.error('moeimId is not available in authStore.');
+    }
   },
 };
 </script>

@@ -20,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -39,10 +41,29 @@ public class ChatController {
         Long userId = Long.valueOf(userDetails.getUsername()); // 사용자 ID 추출
         List<ChatRoom> chatRooms = chatService.getAllRooms(userId);
 
-        // 필요한 데이터만 포함하도록 members 필터링
-        chatRooms.forEach(chatRoom -> chatRoom.getMembers().forEach(member -> {
-            member.setChatRoom(null); // 순환 참조 방지
-        }));
+//        // 필요한 데이터만 포함하도록 members 필터링
+//        chatRooms.forEach(chatRoom -> chatRoom.getMembers().forEach(member -> {
+//            member.setChatRoom(null); // 순환 참조 방지
+//        }));
+
+
+        // ChatRoom 데이터를 CreateRoomDTO로 변환
+        List<CreateRoomDTO> roomDTOs = chatRooms.stream().map(chatRoom -> {
+            List<Long> memberIds = chatRoom.getMembers().stream()
+                    .map(member -> member.getUser().getUserId())
+                    .collect(Collectors.toList());
+
+            // 닉네임 조회
+            List<String> memberNicknames = chatService.getMemberNicknames(memberIds);
+
+            return new CreateRoomDTO(
+                    chatRoom.getName(), // 채팅방 이름
+                    chatRoom.getCreatedBy(), // 생성자 ID
+                    memberIds, // 참여자 ID 목록
+                    memberNicknames // 참여자 닉네임 목록
+            );
+        }).collect(Collectors.toList());
+
 
         return ResponseEntity.ok(chatRooms);
     }
@@ -60,6 +81,7 @@ public class ChatController {
         ChatRoom chatRoom = chatService.createRoom(request, userId);
         return ResponseEntity.ok(chatRoom);
     }
+
 
     // 메시지 전송
     @PostMapping("/message")

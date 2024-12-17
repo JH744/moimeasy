@@ -3,21 +3,17 @@
     <div class="card">
       <DataTable
         v-model:filters="filters"
-        :value="customers"
+        :value="boards"
         paginator
         showGridlines
         :rows="10"
-        dataKey="id"
+        dataKey="boardId"
         filterDisplay="menu"
+        sortMode="single"
         :loading="loading"
-        :globalFilterFields="[
-          'name',
-          'country.name',
-          'representative.name',
-          'balance',
-          'status',
-        ]"
+        :globalFilterFields="['title', 'writerName', 'tag']"
       >
+        <!-- 테이블 헤더 -->
         <template #header>
           <div class="filter-header">
             <Button
@@ -38,92 +34,57 @@
             </IconField>
           </div>
         </template>
-        <template #empty> No customers found. </template>
-        <template #loading> Loading customers data. Please wait. </template>
-        <Column field="name" header="Name" style="min-width: 12rem">
+
+        <!-- 번호 컬럼 -->
+        <Column field="boardId" header="번호" style="min-width: 8rem" sortable>
           <template #body="{ data }">
-            {{ data.name }}
-          </template>
-          <template #filter="{ filterModel }">
-            <InputText
-              v-model="filterModel.value"
-              type="text"
-              placeholder="Search by name"
-            />
+            {{ data.boardId }}
           </template>
         </Column>
-        <Column
-          header="Country"
-          filterField="country.name"
-          style="min-width: 12rem"
-        >
+
+        <!-- 제목 컬럼 -->
+        <Column field="title" header="제목" style="min-width: 14rem" sortable>
           <template #body="{ data }">
-            <div class="flex items-center gap-2 table-td-style">
-              <img
-                alt="flag"
-                src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png"
-                :class="`flag flag-${data.country.code}`"
-                style="width: 24px"
-              />
-              <span>{{ data.country.name }}</span>
-            </div>
-          </template>
-          <template #filter="{ filterModel }">
-            <InputText
-              v-model="filterModel.value"
-              type="text"
-              placeholder="Search by country"
-            />
-          </template>
-          <template #filterclear="{ filterCallback }">
-            <Button
-              type="button"
-              icon="pi pi-times"
-              @click="filterCallback()"
-              severity="secondary"
-            ></Button>
-          </template>
-          <template #filterapply="{ filterCallback }">
-            <Button
-              type="button"
-              icon="pi pi-check"
-              @click="filterCallback()"
-              severity="success"
-            ></Button>
-          </template>
-          <template #filterfooter>
-            <div class="px-4 pt-0 pb-4 text-center">Customized Buttons</div>
+            <router-link :to="`/schedule/board-detail/${data.boardId}`">
+              {{ data.title }}
+            </router-link>
           </template>
         </Column>
+
+        <!-- 작성자 컬럼 -->
         <Column
-          header="Agent"
-          filterField="representative"
-          :showFilterMatchModes="false"
-          :filterMenuStyle="{ width: '14rem' }"
+          field="writerName"
+          header="작성자"
           style="min-width: 14rem"
+          filterField="writerName"
+          :showFilterMenu="false"
         >
           <template #body="{ data }">
-            <div class="flex items-center gap-2 table-td-style">
+            <div class="flex items-center gap-2">
               <img
-                :alt="data.representative.name"
-                :src="`https://primefaces.org/cdn/primevue/images/avatar/${data.representative.image}`"
+                :src="data.profileUrl || defaultProfileImage"
+                :alt="data.writerName"
+                class="profile-image"
                 style="width: 32px"
               />
-              <span>{{ data.representative.name }}</span>
+              <span>{{ data.writerName }}</span>
             </div>
           </template>
-          <template #filter="{ filterModel }">
+          <template #filter="{ filterModel, filterCallback }">
             <MultiSelect
-              v-model="filterModel.value"
-              :options="representatives"
+              v-model="filters['writerName'].value"
+              @change="onWriterFilter"
+              :options="userList"
               optionLabel="name"
-              placeholder="Any"
+              placeholder="작성자를 선택하세요"
+              style="min-width: 14rem"
+              :maxSelectedLabels="2"
             >
               <template #option="slotProps">
-                <div class="flex items-center gap-2 table-td-style">
+                <div class="flex items-center gap-2">
                   <img
                     :alt="slotProps.option.name"
-                    :src="`https://primefaces.org/cdn/primevue/images/avatar/${slotProps.option.image}`"
+                    :src="slotProps.option.image"
                     style="width: 32px"
                   />
                   <span>{{ slotProps.option.name }}</span>
@@ -132,56 +93,24 @@
             </MultiSelect>
           </template>
         </Column>
+        <!-- 태그 컬럼 -->
         <Column
-          header="Date"
-          filterField="date"
-          dataType="date"
-          style="min-width: 10rem"
-        >
-          <template #body="{ data }">
-            {{ formatDate(data.date) }}
-          </template>
-          <template #filter="{ filterModel }">
-            <DatePicker
-              v-model="filterModel.value"
-              dateFormat="mm/dd/yy"
-              placeholder="mm/dd/yyyy"
-            />
-          </template>
-        </Column>
-        <Column
-          header="Balance"
-          filterField="balance"
-          dataType="numeric"
-          style="min-width: 10rem"
-        >
-          <template #body="{ data }">
-            {{ formatCurrency(data.balance) }}
-          </template>
-          <template #filter="{ filterModel }">
-            <InputNumber
-              v-model="filterModel.value"
-              mode="currency"
-              currency="USD"
-              locale="en-US"
-            />
-          </template>
-        </Column>
-        <Column
-          header="Status"
-          field="status"
-          :filterMenuStyle="{ width: '14rem' }"
+          field="tag"
+          header="태그"
+          :showFilterMenu="true"
           style="min-width: 12rem"
         >
           <template #body="{ data }">
-            <Tag :value="data.status" :severity="getSeverity(data.status)" />
+            <Tag :value="data.tag" :severity="getSeverity(data.tag)" />
           </template>
-          <template #filter="{ filterModel }">
+          <template #filter="{ filterModel, filterCallback }">
             <Select
               v-model="filterModel.value"
-              :options="statuses"
-              placeholder="Select One"
-              showClear
+              @change="filterCallback()"
+              :options="tagOptions"
+              placeholder="태그 선택"
+              style="min-width: 12rem"
+              :showClear="true"
             >
               <template #option="slotProps">
                 <Tag
@@ -192,51 +121,16 @@
             </Select>
           </template>
         </Column>
+
+        <!-- 게시일 컬럼 -->
         <Column
-          field="activity"
-          header="Activity"
-          :showFilterMatchModes="false"
+          field="createAt"
+          header="게시일"
           style="min-width: 12rem"
+          sortable
         >
           <template #body="{ data }">
-            <ProgressBar
-              :value="data.activity"
-              :showValue="false"
-              style="height: 6px"
-            ></ProgressBar>
-          </template>
-          <template #filter="{ filterModel }">
-            <Slider v-model="filterModel.value" range class="m-4"></Slider>
-            <div class="flex items-center justify-between px-2">
-              <span>{{ filterModel.value ? filterModel.value[0] : 0 }}</span>
-              <span>{{ filterModel.value ? filterModel.value[1] : 100 }}</span>
-            </div>
-          </template>
-        </Column>
-        <Column
-          field="verified"
-          header="Verified"
-          dataType="boolean"
-          bodyClass="text-center"
-          style="min-width: 8rem"
-        >
-          <template #body="{ data }">
-            <i
-              class="pi"
-              :class="{
-                'pi-check-circle text-green-500 ': data.verified,
-                'pi-times-circle text-red-500': !data.verified,
-              }"
-            ></i>
-          </template>
-          <template #filter="{ filterModel }">
-            <label for="verified-filter" class="font-bold"> Verified </label>
-            <Checkbox
-              v-model="filterModel.value"
-              :indeterminate="filterModel.value === null"
-              binary
-              inputId="verified-filter"
-            />
+            {{ formatDate(data.createAt) }}
           </template>
         </Column>
       </DataTable>
@@ -245,148 +139,145 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { CustomerService } from '@/service/CustomerService';
-import { FilterMatchMode, FilterOperator } from '@primevue/core/api';
-import DatePicker from 'primevue/datepicker';
-import Select from 'primevue/select';
-import 'primeicons/primeicons.css';
-import InputNumber from 'primevue/inputnumber';
-import Tag from 'primevue/tag';
-import ProgressBar from 'primevue/progressbar';
-import Slider from 'primevue/slider';
-import Checkbox from 'primevue/checkbox';
+import { ref, onMounted, computed } from 'vue';
+import axios from 'axios';
 import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
+import Tag from 'primevue/tag';
+import Select from 'primevue/select';
 import MultiSelect from 'primevue/multiselect';
-import Column from 'primevue/column'; // 테이블용 컬럼
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
+import { FilterMatchMode } from '@primevue/core/api';
 
-const customers = ref();
+const boards = ref([]);
 const filters = ref();
-const representatives = ref([
-  { name: 'Amy Elsner', image: 'amyelsner.png' },
-  { name: 'Anna Fali', image: 'annafali.png' },
-  { name: 'Asiya Javayant', image: 'asiyajavayant.png' },
-  { name: 'Bernardo Dominic', image: 'bernardodominic.png' },
-  { name: 'Elwin Sharvill', image: 'elwinsharvill.png' },
-  { name: 'Ioni Bowcher', image: 'ionibowcher.png' },
-  { name: 'Ivan Magalhaes', image: 'ivanmagalhaes.png' },
-  { name: 'Onyama Limba', image: 'onyamalimba.png' },
-  { name: 'Stephen Shaw', image: 'stephenshaw.png' },
-  { name: 'XuXue Feng', image: 'xuxuefeng.png' },
-]);
-const statuses = ref([
-  'unqualified',
-  'qualified',
-  'new',
-  'negotiation',
-  'renewal',
-  'proposal',
-]);
 const loading = ref(true);
-
-onMounted(() => {
-  CustomerService.getCustomersMedium().then((data) => {
-    customers.value = getCustomers(data);
-    loading.value = false;
-  });
+// userList를 computed로 변경
+const userList = computed(() => {
+  // 중복 제거 및 고유한 작성자 목록 생성
+  return [...new Set(boards.value.map((board) => board.writerName))].map(
+    (name) => ({
+      name: name,
+      image:
+        boards.value.find((board) => board.writerName === name)?.profileUrl ||
+        defaultProfileImage,
+    })
+  );
 });
 
+const defaultProfileImage =
+  'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png';
+
+const tagOptions = ref(['info', 'success', 'warning', 'danger', '일반']); // 태그 옵션 예시
+
+// 필터 초기화
 const initFilters = () => {
   filters.value = {
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    'country.name': {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    representative: { value: null, matchMode: FilterMatchMode.IN },
-    date: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-    },
-    balance: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    status: {
-      operator: FilterOperator.OR,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    activity: { value: [0, 100], matchMode: FilterMatchMode.BETWEEN },
-    verified: { value: null, matchMode: FilterMatchMode.EQUALS },
+    global: { value: null, matchMode: 'contains' },
+    writerName: { value: null, matchMode: FilterMatchMode.IN },
+    tag: { value: null, matchMode: FilterMatchMode.EQUALS },
   };
 };
-
 initFilters();
 
+const getSeverity = (tag) => {
+  const severities = ['info', 'success', 'warning', 'danger'];
+
+  // 태그 문자열을 기반으로 일관된 랜덤 선택을 위해 해시 함수 사용
+  const hashCode = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  };
+
+  // 태그 문자열을 기반으로 인덱스 결정
+  const index = hashCode(tag) % severities.length;
+  return severities[index];
+};
+
+// 날짜 포맷 함수
 const formatDate = (value) => {
-  return value.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: '2-digit',
+  return new Date(value).toLocaleDateString('ko-KR', {
     year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   });
 };
-const formatCurrency = (value) => {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+// 작성자 필터 이벤트 핸들러
+const onWriterFilter = (event) => {
+  filters.value['writerName'].value = event.value;
 };
+
+// 게시판 데이터 가져오기
+const fetchBoards = async () => {
+  try {
+    const response = await axios.get('/api/v1/boards');
+    boards.value = response.data;
+    // 데이터에서 고유한 태그 추출
+    const uniqueTags = [...new Set(response.data.map((board) => board.tag))];
+    tagOptions.value = uniqueTags;
+  } catch (error) {
+    console.error('Error fetching boards:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 필터 초기화 버튼
 const clearFilter = () => {
   initFilters();
 };
-const getCustomers = (data) => {
-  return [...(data || [])].map((d) => {
-    d.date = new Date(d.date);
 
-    return d;
-  });
-};
-const getSeverity = (status) => {
-  switch (status) {
-    case 'unqualified':
-      return 'danger';
-
-    case 'qualified':
-      return 'success';
-
-    case 'new':
-      return 'info';
-
-    case 'negotiation':
-      return 'warn';
-
-    case 'renewal':
-      return null;
-  }
-};
+onMounted(() => {
+  fetchBoards();
+});
 </script>
 
-<style scoped>
+<style>
+.board-wrapper {
+  width: 98%;
+  margin: 10px;
+}
+
 .filter-header {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 1rem;
 }
 
-.board-wrapper {
-  margin: 10px 10px;
-  width: 100%;
-  height: auto;
+.profile-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: contain;
 }
 
-.text-green-500 {
-  color: #22c55e;
+.p-datatable-table td {
+  padding: 10px 16px !important;
+  text-align: center;
+  vertical-align: middle;
 }
-.text-red-500 {
-  color: #ef4444;
+.p-datatable-table td:nth-child(3) {
+  div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    span,
+    img {
+      display: block;
+    }
+  }
 }
-
-.table-td-style {
+/* .flex .items-center .gap-2 {
   display: flex;
-  gap: 8px;
   align-items: center;
-}
+} */
 </style>

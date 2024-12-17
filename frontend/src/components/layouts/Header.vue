@@ -2,9 +2,6 @@
   <div class="header-wrapper">
     <div class="header-box">
       <div class="header-box1">
-        <!-- 브래드크럼 설정 -->
-        <!-- <img src="@/assets/arrowIcon.svg?url" alt="Arrow Icon" height="12px" />
-        <p>DashBoard</p> -->
         <div class="card breadcrumb-wrapper">
           <Breadcrumb :home="home" :model="items">
             <template #item="{ item, props }">
@@ -62,8 +59,10 @@
             src="@/assets/icons/Avatar.svg?url"
             alt="Avatar Icon"
             height="32px"
+            @click="toggle"
           />
           <p>{{ nickName }}</p>
+          <TieredMenu ref="menu" id="overlay_tmenu" :model="menus" popup />
         </div>
       </div>
     </div>
@@ -73,16 +72,21 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import OverlayBadge from 'primevue/overlaybadge';
 import Breadcrumb from 'primevue/breadcrumb';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
-
+import TieredMenu from 'primevue/tieredmenu';
+import { useAuthStore } from '@/stores/auth'; // Pinia auth 스토어
+const authStore = useAuthStore();
 const nickName = ref('');
 const userData = ref('');
 const toast = useToast();
 const route = useRoute();
-
+const router = useRouter();
+const menu = ref();
+const menus = ref([]);
 // 브레드크럼 홈경로 설정
 const home = ref({
   icon: 'pi pi-home',
@@ -113,6 +117,31 @@ watch(
     userData.value = userDataStorage ? JSON.parse(userDataStorage) : null;
     // 닉네임 업데이트
     nickName.value = userData.value?.nickname || '게스트';
+    menus.value = [
+      {
+        label: 'Profile',
+        icon: 'pi pi-user-edit',
+        command: () => {
+          router.push(`/user-profile/${userData.value.userId}`);
+        },
+      },
+      nickName.value != '게스트'
+        ? {
+            label: 'Logout',
+            icon: 'pi pi-sign-out',
+            command: () => {
+              console.log('로그아웃 실행'); // 디버깅 로그
+              authStore.logout(); // Pinia auth 스토어의 logout 호출
+            },
+          }
+        : {
+            label: 'Login',
+            icon: 'pi pi-sign-in',
+            command: () => {
+              router.push('/login');
+            },
+          },
+    ];
   },
   { immediate: true } // 컴포넌트가 처음 마운트될 때도 실행
 );
@@ -130,6 +159,10 @@ const showSecondary = () => {
     detail: '운영자로 부터 쪽지가 도착했습니다.',
     life: 3000,
   });
+};
+
+const toggle = (event) => {
+  menu.value.toggle(event);
 };
 </script>
 
@@ -202,7 +235,10 @@ const showSecondary = () => {
 .profile-box {
   display: flex;
   align-items: center;
+  justify-content: space-evenly;
   gap: 12px;
+  cursor: pointer;
+  border-radius: 20px;
 }
 
 .breadcrumb-wrapper {

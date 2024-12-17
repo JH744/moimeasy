@@ -20,10 +20,12 @@ import { ref } from 'vue';
 import SpeedDial from 'primevue/speeddial';
 import { useUIStore } from '@/stores/uiStore';
 import useSpeedDialItems from '@/data/speedDialItems';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const uiStore = useUIStore();
 // SpeedDial Items 가져오기
-const items = ref(useSpeedDialItems());
+const items = ref(useSpeedDialItems(router));
 </script>
 
 <style>

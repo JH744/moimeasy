@@ -1,10 +1,16 @@
 <template>
   <div class="chat-layout">
+    <!-- 채팅방 목록 -->
     <div class="chat-room-list">
       <ChatRoomList @selectRoom="handleSelectRoom" />
     </div>
+
+    <!-- 채팅방 뷰 -->
     <div class="chat-view">
-      <ChatView :roomId="selectedRoomId" />
+      <div v-if="selectedRoomId">
+        <ChatView :key="selectedRoomId" :roomId="selectedRoomId" />
+      </div>
+      <div v-else class="no-chat-selected">채팅방을 선택하세요.</div>
     </div>
   </div>
 </template>
@@ -14,7 +20,8 @@ import ChatRoomList from './ChatRoomListView.vue';
 import ChatView from './ChatView.vue';
 
 export default {
-  name: 'ChatLayout',
+  name: 'ChatLayoutView',
+  components: { ChatRoomList, ChatView },
   data() {
     return {
       selectedRoomId: null, // 선택된 채팅방 ID
@@ -22,7 +29,7 @@ export default {
   },
   methods: {
     handleSelectRoom(roomId) {
-      this.selectedRoomId = roomId; // 채팅방 ID 변경
+      this.selectedRoomId = roomId; // 선택된 채팅방 ID 업데이트
     },
   },
 };
@@ -35,13 +42,22 @@ export default {
 }
 
 .chat-room-list {
-  flex: 1; /* 왼쪽 목록 */
+  flex: 1;
   border-right: 1px solid #ddd;
   overflow-y: auto;
 }
 
 .chat-view {
-  flex: 2; /* 오른쪽 대화창 */
+  flex: 2;
   overflow-y: auto;
+}
+
+.no-chat-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
+  color: #888;
 }
 </style>

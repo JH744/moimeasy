@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -31,7 +32,7 @@ public class UserService {
         User user = new User();
         user.setUserName(request.getUserName());
         user.setPassword(request.getPassword());
-        user.setAddress(request.getAddress());
+        user.setProfileImage(request.getProfileImage());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setNickname(request.getNickname());
@@ -51,8 +52,8 @@ public class UserService {
         if (request.getPassword() != null) {
             user.setPassword(request.getPassword());
         }
-        if (request.getAddress() != null) {
-            user.setAddress(request.getAddress());
+        if (request.getProfileImage() != null) {
+            user.setProfileImage(request.getProfileImage());
         }
         if (request.getEmail() != null) {
             user.setEmail(request.getEmail());
@@ -74,6 +75,22 @@ public class UserService {
 
     public Optional<User> findById(Long userId) {
         return userRepository.findById(userId);
+    }
+
+
+    public List<UserDTO> getUsersByMoeimId(Long moeimId) {
+        List<User> users = userRepository.findByMoeimId(moeimId);
+        return users.stream()
+                .map(user -> UserDTO.builder()
+                        .userId(user.getUserId())
+                        .userName(user.getUserName()) // userName 추가
+                        .nickname(user.getNickname())
+                        .email(user.getEmail())
+                        .createAt(user.getCreateAt()) // createAt 추가
+                        .roleName(user.getRole() != null ? user.getRole().getRoleName() : null) // roleName 추가
+                        .moeimId(user.getMoeimId())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

@@ -38,7 +38,7 @@ public class ChatService {
         // `moeimId`를 기반으로 멤버 필터링
         List<User> members = userRepository.findAllById(request.getMemberIds())
                 .stream()
-                .filter(user -> user.getMoeimId().equals(userMoeimId))
+                .filter(user -> user.getMoeimId().equals(userMoeimId)) // 같은 모임에 속한 회원만 필터링
                 .collect(Collectors.toList());
 
         if (members.isEmpty()) {
@@ -55,7 +55,7 @@ public class ChatService {
         ChatRoom finalChatRoom = chatRoom;
         members.forEach(user -> {
             ChatRoomUser chatRoomUser = new ChatRoomUser();
-            chatRoomUser.setChatRoom(finalChatRoom); // finalChatRoom 사용
+            chatRoomUser.setChatRoom(finalChatRoom);
             chatRoomUser.setUser(user);
             chatRoomUser.setUserNickname(user.getNickname());
             chatRoomUserRepository.save(chatRoomUser);
@@ -63,6 +63,7 @@ public class ChatService {
 
         return chatRoom;
     }
+
 
 
 
@@ -111,6 +112,14 @@ public class ChatService {
 
     public List<ChatMessage> getMessagesSince(Long roomId, Long lastMessageId) {
         return chatMessageRepository.findByChatRoomIdAndIdGreaterThanOrderByCreatedAtAsc(roomId, lastMessageId);
+    }
+
+    @Transactional
+    public List<String> getMemberNicknames(List<Long> memberIds) {
+        // UserRepository를 통해 사용자 닉네임 조회
+        return userRepository.findAllById(memberIds).stream()
+                .map(User::getNickname)
+                .collect(Collectors.toList());
     }
 
 

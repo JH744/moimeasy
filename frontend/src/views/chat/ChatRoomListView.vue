@@ -13,47 +13,73 @@
         @click="enterRoom(room.id)"
         class="room-item"
       >
-        <span class="room-name">{{ room.name }}</span>
+        <div class="room-header">
+          <!-- 채팅방명이 있을 경우 표시 -->
+          <span v-if="room.name" class="room-name">{{ room.name }}</span>
+          <!-- 채팅방명이 없으면 참여자 닉네임 표시 -->
+          <span v-else class="room-name">
+            {{
+              Array.isArray(room.members)
+                ? room.members.map((member) => member.userNickname).join(', ')
+                : '참여자 없음'
+            }}
+          </span>
+        </div>
         <hr />
-        <p>
+        <!-- 참여자 목록을 채팅방명이 있더라도 항상 표시 -->
+        <p class="room-participants">
           참여자:
           {{
-            room.members
+            Array.isArray(room.members)
               ? room.members.map((member) => member.userNickname).join(', ')
               : '참여자 없음'
           }}
         </p>
       </li>
     </ul>
+
     <!-- 채팅방 생성 모달 -->
-    <div v-if="isCreateRoomModalOpen" class="modal">
+    <Dialog
+      header="채팅방 생성"
+      :visible="isCreateRoomModalOpen"
+      style="width: 50vw"
+      :modal="true"
+      :closable="false"
+      @hide="closeCreateRoomModal"
+    >
       <div class="modal-content">
-        <h2>채팅방 생성</h2>
-        <h3>채팅방 이름</h3>
-        <input v-model="newRoomName" id="roomName" placeholder="채팅방 이름" />
+        <div class="form-group">
+          <label for="roomName">채팅방 이름</label>
+          <InputText
+            v-model="newRoomName"
+            id="roomName"
+            placeholder="채팅방 이름을 입력하세요"
+            class="p-inputtext"
+            style="width: 100%; margin-bottom: 10px"
+          />
+        </div>
 
         <h4>참여자 선택</h4>
         <div class="members-list">
           <ul>
-            <li v-for="user in members" :key="user.id">
-              <label>
-                <input
-                  type="checkbox"
-                  :value="user.id"
-                  v-model="selectedMembers"
-                />
-                {{ user.nickname }}
-              </label>
+            <li v-for="user in members" :key="user.userId" class="member-item">
+              <Checkbox
+                :value="user.userId"
+                v-model="selectedMembers"
+                class="member-checkbox"
+              />
+              <label>{{ user.nickname }}</label>
             </li>
           </ul>
         </div>
 
         <div class="selected-members">
           <h4>선택된 회원</h4>
-          <ul>
+          <p v-if="selectedMembers.length === 0">선택된 회원이 없습니다.</p>
+          <ul v-else>
             <li v-for="id in selectedMembers" :key="id">
               {{
-                members.find((member) => member.id === id)?.nickname ||
+                members.find((member) => member.userId === id)?.nickname ||
                 '알 수 없는 사용자'
               }}
             </li>
@@ -61,22 +87,29 @@
         </div>
 
         <div class="modal-buttons">
-          <button @click="createRoom" class="btn-primary">생성</button>
-          <button @click="closeCreateRoomModal" class="btn-secondary">
-            취소
-          </button>
+          <Button @click="createRoom" label="생성" class="p-button-success" />
+          <Button
+            @click="closeCreateRoomModal"
+            label="취소"
+            class="p-button-secondary"
+          />
         </div>
       </div>
-    </div>
+    </Dialog>
   </div>
 </template>
 
 <script>
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
+import InputText from 'primevue/inputtext';
+import Dialog from 'primevue/dialog';
+import Button from 'primevue/button';
+import Checkbox from 'primevue/checkbox';
 
 export default {
   name: 'ChatRoomListView',
+  components: { InputText, Button, Checkbox, Dialog },
   data() {
     return {
       rooms: [],
@@ -101,26 +134,19 @@ export default {
           return;
         }
 
-        console.log('Fetching rooms for userId:', userId);
-
         const response = await axios.get(`/api/v1/chat/rooms`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          params: { userId }, // userId를 쿼리 파라미터로 전달
+          params: { userId },
         });
 
-        this.rooms = response.data;
+        console.log('Rooms API response:', response.data);
+        this.rooms = response.data.map((room) => ({
+          ...room,
+          members: room.members || [], // members가 null/undefined인 경우 빈 배열로 설정
+        }));
       } catch (error) {
-        if (error.response?.status === 401) {
-          try {
-            await this.authStore.refreshAccessToken();
-            return this.fetchRooms(); // 토큰 갱신 후 다시 요청
-          } catch (refreshError) {
-            this.authStore.logout();
-            return;
-          }
-        }
         console.error('Error fetching chat rooms:', error);
       }
     },
@@ -134,16 +160,17 @@ export default {
           return;
         }
 
-        console.log('Fetching members with moeimId:', moeimId);
-
-        const response = await axios.get('/api/v1/users', {
+        const response = await axios.get('/api/v1/users/members', {
           params: { moeimId },
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        this.members = response.data;
+        const currentUserId = this.authStore.user.userId;
+        this.members = response.data.filter(
+          (member) => member.userId !== currentUserId
+        );
       } catch (error) {
         console.error('Error fetching members:', error);
       }
@@ -158,17 +185,18 @@ export default {
     },
     async createRoom() {
       try {
-        const token = this.authStore.token;
+        const token = this.authStore.accessToken;
         const payload = {
           roomName: this.newRoomName || '',
-          createdBy: this.authStore.user.id, // 현재 사용자 ID
           memberIds: this.selectedMembers,
         };
+
         const response = await axios.post('/api/v1/chat/room', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
         this.rooms.push(response.data);
         this.closeCreateRoomModal();
       } catch (error) {
@@ -180,20 +208,14 @@ export default {
         console.error('Room ID is not defined.');
         return;
       }
-      console.log('Navigating to ChatView with roomId:', roomId);
-      this.$router.push({
-        name: 'ChatView',
-        params: { roomId: String(roomId) },
-      });
+      this.$emit('selectRoom', roomId);
     },
   },
   mounted() {
-    console.log('AuthStore user:', this.authStore.user);
-
-    if (this.authStore.user?.moiemId) {
+    if (this.authStore.user?.moeimId) {
       this.fetchMembers();
     } else {
-      console.error('moiemId is not available in authStore.');
+      console.error('moeimId is not available in authStore.');
     }
 
     if (this.authStore.user?.userId) {
@@ -331,5 +353,15 @@ hr {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+}
+.room-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.room-participants {
+  font-size: 14px;
+  color: #777;
 }
 </style>

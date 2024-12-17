@@ -6,7 +6,10 @@ import com.kosa.moimeasy.user.entity.User;
 import com.kosa.moimeasy.user.service.RoleService;
 import com.kosa.moimeasy.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.kosa.moimeasy.common.exception.ResourceNotFoundException;
@@ -24,20 +27,20 @@ public class UserController {
     @Autowired
     private RoleService roleService;
 
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> getUsersByMoeimId(@RequestParam(required = false) Long moeimId) {
-        if (moeimId == null) {
-            throw new IllegalArgumentException("moeimId는 필수 파라미터입니다.");
-        }
-
-        List<User> users = userService.findByMoeimId(moeimId);
-        if (users.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 데이터가 없는 경우 204 반환
-        }
-
-        List<UserDTO> userDTOs = users.stream().map(UserDTO::new).toList();
-        return ResponseEntity.ok(userDTOs);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<UserDTO>> getUsersByMoeimId(@RequestParam(required = false) Long moeimId) {
+//        if (moeimId == null) {
+//            throw new IllegalArgumentException("moeimId는 필수 파라미터입니다.");
+//        }
+//
+//        List<User> users = userService.findByMoeimId(moeimId);
+//        if (users.isEmpty()) {
+//            return ResponseEntity.noContent().build(); // 데이터가 없는 경우 204 반환
+//        }
+//
+//        List<UserDTO> userDTOs = users.stream().map(UserDTO::new).toList();
+//        return ResponseEntity.ok(userDTOs);
+//    }
     //로그인, 회원가입돼서 필요없음
     @PostMapping("/create")
     public User createUser(@RequestBody UserDTO request) {
@@ -48,6 +51,7 @@ public class UserController {
     //요청한 정보만 수정가능
     @PutMapping("/update/{userId}")
     public User updateUser(@PathVariable Long userId, @RequestBody UserDTO request) {
+        System.out.println("전달된 데이터 "+userId+" 프로필: "+request.getProfileImage());
         return userService.updateUser(userId, request);
     }
 
@@ -60,5 +64,29 @@ public class UserController {
         UserDTO userDTO = new UserDTO(user);
         return ResponseEntity.ok(userDTO);
     }
+
+    @GetMapping("/members")
+    public ResponseEntity<List<UserDTO>> getMembersByMoeim(
+            @RequestParam Long moeimId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = Long.valueOf(userDetails.getUsername()); // 현재 로그인된 사용자 ID
+
+        List<UserDTO> members = userService.getUsersByMoeimId(moeimId);
+
+        // DTO에 필요한 정보만 설정
+        members.forEach(member -> {
+            member.setRoleName(member.getRoleName());
+            member.setCreateAt(member.getCreateAt());
+        });
+
+        return ResponseEntity.ok(members);
+    }
+
+
 
 }
