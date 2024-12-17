@@ -23,6 +23,7 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import Select from 'primevue/select';
 import FloatLabel from 'primevue/floatlabel';
 import Ripple from 'primevue/ripple';
+import Toast from 'primevue/toast';
 
 // axios 기본 설정 (Spring Boot 백엔드가 8088 포트라 가정)
 axios.defaults.baseURL = 'http://localhost:8088'; // 서버 URL 설정

@@ -62,15 +62,15 @@
 <script>
 import axios from 'axios';
 import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
+import { useToast } from 'primevue/usetoast'; // Toast 사용
 import { ref, uploadBytes } from 'firebase/storage';
 import { firebaseStorage } from '@/firebase/firebaseConfig';
+import { fetchImageUrl } from '@/utils/image-load-utils';
 
 export default {
   setup() {
     const confirm = useConfirm(); // useConfirm 선언
-    const toast = useToast(); // useToast 선언
-
+    const toast = useToast(); // Toast 인스턴스
     return { confirm, toast };
   },
   data() {
@@ -90,6 +90,7 @@ export default {
       try {
         const response = await axios.get(`/api/v1/users/${userId}`);
         this.user = response.data; // 응답 데이터를 user에 저장
+        this.src = await fetchImageUrl(response.data.profileImage);
       } catch (error) {
         console.error('사용자 정보를 불러오는데 실패했습니다:', error);
         alert('사용자 정보를 불러오는데 실패했습니다.');
@@ -124,14 +125,7 @@ export default {
         },
         accept: () => {
           // 프로필 저장 api추가
-          this.handleFileUpload(file); // 파이어베이스 스토리지 저장
-          // 저장 완료 시 토스트메시지 띄우기
-          this.toast.add({
-            severity: 'success',
-            summary: '등록 완료',
-            detail: '프로필 이미지가 등록되었습니다.',
-            life: 3000,
-          });
+          this.handleFileUpload(file); // 1. 파이어베이스 스토리지 파일업로드 진행
         },
         reject: () => {},
       });
@@ -149,7 +143,7 @@ export default {
       try {
         let uploadedFile = await uploadBytes(storageRef, file);
         let uploadedFileUrl = uploadedFile.metadata.fullPath;
-        this.fetchUpdateProfileImage(uploadedFileUrl);
+        this.fetchUpdateProfileImage(uploadedFileUrl); //2.DB에 파이어베이스에 저장된 파일경로를 저장
       } catch (error) {
         console.error('파일 업로드 실패', error);
       }
@@ -164,8 +158,22 @@ export default {
           `/api/v1/users/update/${this.user.userId}`,
           this.profileImage
         );
+        this.src = await fetchImageUrl(uploadedFileUrl); // 3. 파이어베이스 스토리지에서 이미지 로드 가능한 변환된 경로 가져오기
+        // 저장 완료 시 토스트메시지 띄우기
+        this.toast.add({
+          severity: 'success',
+          summary: '등록 완료',
+          detail: '프로필 이미지가 등록되었습니다.',
+          life: 3000,
+        });
       } catch (error) {
         console.error('저장실패', error);
+        this.toast.add({
+          severity: 'danger',
+          summary: '등록 실패',
+          detail: '프로필 이미지 등록에 실패했습니다.',
+          life: 3000,
+        });
       }
     },
   },
