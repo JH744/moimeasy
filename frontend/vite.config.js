@@ -22,6 +22,7 @@ export default defineConfig({
 
   // 개발 서버 설정
   server: {
+    host: '0.0.0.0', // 모든 IP에서 접근 가능
     port: 3000, // 개발 서버 포트 설정
     proxy: {
       '/api/v1': {

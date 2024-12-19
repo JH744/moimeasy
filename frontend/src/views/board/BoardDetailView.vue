@@ -6,15 +6,7 @@
     <div class="author">
       <!-- Avatar를 사용하여 이미지 표시 -->
       <Avatar
-        v-if="board.profileImage"
-        :image="board.profileImage"
-        shape="circle"
-        size="large"
-        style="margin-right: 8px"
-      />
-      <Avatar
-        v-else
-        :image="defaultProfileImage"
+        :image="profileImage || defaultProfileImage"
         shape="circle"
         size="large"
         style="margin-right: 8px"
@@ -25,24 +17,9 @@
     <div class="tags" v-if="board.tag">
       <Tag :value="board.tag"></Tag>
     </div>
-
     <!-- 내용 -->
     <div class="content" v-html="board.content || '내용이 없습니다.'"></div>
-    <Card class="content-card">
-      <template #title>
-        <div class="content-header">
-          <i
-            class="pi pi-file-edit"
-            style="font-size: 1.5rem; margin-right: 0.5rem"
-          ></i>
-          <h2>게시글 내용</h2>
-        </div>
-      </template>
-      <template #content>
-        <div class="content" v-html="board.content || '내용이 없습니다.'"></div>
-      </template>
-    </Card>
-    <!-- 수정삭제 버튼 (작성자에게만 표시)-->
+    <!-- 수정&삭제 버튼 (작성자에게만 표시)-->
     <div class="board-detail-btn-box" v-if="nickname == board.writerName">
       <Toast />
       <ConfirmPopup></ConfirmPopup>
@@ -59,10 +36,6 @@
         @click="deleteConfirm($event)"
       />
     </div>
-  </div>
-  <div v-else class="loading">
-    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-    <p>데이터를 불러오는 중입니다...</p>
   </div>
 </template>
 
@@ -81,6 +54,7 @@ import { useToast } from 'primevue/usetoast';
 import ConfirmPopup from 'primevue/confirmpopup';
 import { useRouter } from 'vue-router';
 import { useLoadingStore } from '@/stores/useLoadingStore';
+import { fetchImageUrl } from '@/utils/image-load-utils';
 const loadingStore = useLoadingStore();
 
 const router = useRouter();
@@ -90,6 +64,7 @@ const auth = useAuthStore();
 const route = useRoute();
 
 const nickname = auth.user.nickname;
+const profileImage = ref('');
 const boardId = route.params.id; // 라우터의 id 파라미터
 const board = ref(null);
 const defaultProfileImage =
@@ -101,6 +76,8 @@ const fetchBoardData = async () => {
   try {
     const response = await api.get(`/api/v1/boards/${boardId}`);
     board.value = response.data; // API 결과 저장
+    profileImage.value = await fetchImageUrl(response.data.profileImage); //파베에서 읽어올 수 있도록 url 변환
+    console.log('변환된 프로필url:', profileImage.value);
   } catch (error) {
     console.error('게시글 데이터를 불러오지 못했습니다.', error);
   } finally {

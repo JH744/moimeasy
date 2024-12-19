@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class RemittanceListDto {
+public class RemittanceListDto { // 계좌 내역 조회
 
         private Long userId; // 회원 Id
         private String receivedAccount; // 송금받는 계좌

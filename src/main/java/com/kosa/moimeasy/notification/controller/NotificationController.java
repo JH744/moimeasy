@@ -1,6 +1,9 @@
 package com.kosa.moimeasy.notification.controller;
 
-import com.kosa.moimeasy.notification.entity.NotificationEntity;
+import com.kosa.moimeasy.notification.dto.NotificationDTO;
+import com.kosa.moimeasy.notification.entity.Notification;
+import com.kosa.moimeasy.notification.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,28 +11,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/v1/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
+    private final NotificationService notificationService;
 
-    private final List<NotificationEntity> notifications = new ArrayList<>();
-
+    // 알림 추가
     @PostMapping
-    public ResponseEntity<String> addNotification(@RequestBody NotificationEntity notification) {
-        notifications.add(notification);
-        return ResponseEntity.ok("알림 추가 완료");
+    public NotificationDTO addNotification(@RequestBody NotificationDTO dto) {
+        return notificationService.addNotification(dto);
     }
 
-    @GetMapping("/recent")
-    public List<NotificationEntity> getRecentNotifications() {
-        // 최신 알림 5개 반환
-        return notifications.stream()
-                .sorted((n1, n2) -> Long.compare(n2.getTimestamp(), n1.getTimestamp())) // 최신순 정렬
-                .limit(5)
-                .toList();
-    }
-
+    // 유저의 모임 알림 조회
     @GetMapping
-    public List<NotificationEntity> getNotifications() {
-        return notifications;
+    public ResponseEntity<List<NotificationDTO>> getMoeimNotifications(@RequestParam Long userId) {
+        return ResponseEntity.ok(notificationService.getMoeimNotifications(userId));
+    }
+
+    // 알림 확인 시간 업데이트
+    @PatchMapping("/update-viewed-time")
+    public ResponseEntity<String> updateLastNotificationViewedAt(@RequestParam Long userId) {
+        notificationService.updateLastNotificationViewedAt(userId);
+        return ResponseEntity.ok("알림 확인 시간 업데이트 완료");
     }
 }

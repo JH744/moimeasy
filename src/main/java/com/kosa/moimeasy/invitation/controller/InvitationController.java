@@ -1,6 +1,7 @@
 package com.kosa.moimeasy.invitation.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import com.kosa.moimeasy.invitation.service.InvitationService;
 import com.kosa.moimeasy.invitation.dto.EmailRequest;
@@ -21,8 +22,8 @@ public class InvitationController {
     @Autowired
     private InvitationService invitationService;
 
-    @PostMapping(value = "/send", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> sendInvitation(
+    @PostMapping("/send")
+    public ResponseEntity<?> sendInvitation(
             @RequestBody EmailRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
@@ -30,15 +31,16 @@ public class InvitationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 인증이 필요합니다.");
         }
 
-        Long userId = Long.valueOf(userDetails.getUsername()); // 현재 로그인된 사용자 ID
+        Long userId = Long.valueOf(userDetails.getUsername());
+        String moeimCode = invitationService.sendInvitation(userId, request, request.getHtmlContent());
 
-        try {
-            invitationService.sendInvitation(userId, request, request.getHtmlContent());
-            return ResponseEntity.ok("초대가 성공적으로 전송되었습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("초대 전송 실패: " + e.getMessage());
-        }
+        // 모임 코드와 성공 메시지를 함께 반환
+        return ResponseEntity.ok(Map.of(
+                "message", "초대가 성공적으로 전송되었습니다.",
+                "moeimCode", moeimCode
+        ));
     }
+
 
     @GetMapping
     public ResponseEntity<List<Invitation>> getInvitations(@AuthenticationPrincipal UserDetails userDetails) {

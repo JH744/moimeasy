@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateRoomDTO {
+    private Long id;
     private String roomName;
     private Long createdBy;
     private List<Long> memberIds;

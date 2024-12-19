@@ -1,157 +1,166 @@
 <template>
-  <div class="signup-container">
-    <h2 class="title">회원가입</h2>
+  <div class="card-container">
+    <!-- 타이틀 -->
+    <div class="title">회원가입</div>
 
-        <!-- 오류 메시지 표시 -->
-        <div v-if="errorMessage" class="error-message">
-      <p>{{ errorMessage }}</p>
+    <!-- 오류 메시지 표시 -->
+    <div v-if="errorMessage" class="result error">
+      {{ errorMessage }}
     </div>
 
     <!-- 성공 메시지 표시 -->
-    <div v-if="successMessage" class="success-message">
-      <p>{{ successMessage }}</p>
+    <div v-if="successMessage" class="result success">
+      {{ successMessage }}
     </div>
 
-    <form @submit.prevent="handleRegister">
-      <div class="form-group">
-        <!-- 이름 -->
-        <label for="username">Username</label>
+    <!-- 입력 폼 -->
+    <form @submit.prevent="handleRegister" class="form">
+      <!-- 사용자 이름 -->
+      <div class="input-container">
+        <label for="username">이름</label>
         <input
-          type="text" id="username"
+          type="text"
+          id="username"
           v-model="form.username"
-          placeholder="Your username"
-          required/>
-          <div v-if="errors.name" class="error-message">
-            <p>{{ errors.name }}</p>
-          </div>
+          placeholder="이름을 입력해 주세요"
+          required
+        />
       </div>
 
       <!-- 이메일 -->
-      <div class="form-group">
-        <label for="email">Email</label>
+      <div class="input-container">
+        <label for="email">이메일</label>
         <input
           type="email"
           id="email"
           v-model="form.email"
-          @input="resetEmailCheck"
-          placeholder="Your email"
-          required/>
-          <button type="button" class="check-button" @click="checkEmail" :disabled="isEmailChecked || isSubmitting">
-            중복 확인
-          </button>
-          <div :class="feedbackEmailClass">{{ feedbackEmail }}</div>
-          <div v-if="errors.email" class="error-message">
-            <p>{{ errors.email }}</p>
-          </div>
+          placeholder="이메일을 입력해 주세요"
+          required
+        />
+        <button
+          type="button"
+          class="check-button"
+          @click="checkEmail"
+          :disabled="isEmailChecked || isSubmitting"
+        >
+          이메일 중복 확인
+        </button>
+        <div :class="feedbackEmailClass">{{ feedbackEmail }}</div>
       </div>
 
       <!-- 닉네임 -->
-      <div class="form-group">
-        <label for="nickname">Nickname</label>
+      <div class="input-container">
+        <label for="nickname">닉네임</label>
         <input
-          type="nickname"
+          type="text"
+          id="nickname"
           v-model="form.nickname"
-          @input="resetNicknameCheck"
-          placeholder="Your nickname"
-          required/>
-          <button type="button" class="check-button" @click="checkNickname" :disabled="isNicknameChecked || isSubmitting">
-            중복 확인
-          </button>
-          <div :class="feedbackNicknameClass">{{ feedbackNickname }}</div>
-          <div v-if="errors.nickname" class="error-message">
-            <p>{{ errors.nickname }}</p>
-          </div>
+          placeholder="닉네임을 입력해 주세요"
+          required
+        />
+        <button
+          type="button"
+          class="check-button"
+          @click="checkNickname"
+          :disabled="isNicknameChecked || isSubmitting"
+        >
+          닉네임 중복 확인
+        </button>
+        <div :class="feedbackNicknameClass">{{ feedbackNickname }}</div>
       </div>
 
       <!-- 연락처 -->
-      <div class="form-group">
-        <label for="phone">Phone</label>
+      <div class="input-container">
+        <label for="phone">연락처</label>
         <input
           type="tel"
+          id="phone"
           v-model="form.phone"
-          placeholder="Your phone"
-          required
-          pattern="^[0-9\+\-\(\)\s]+$"
-          title="유효한 연락처를 입력해 주세요."
-          />
-          <div v-if="errors.phone_number" class="error-message">
-            <p>{{ errors.phone_number }}</p>
-          </div>
-        </div>
-
-      <!-- 비밀번호 -->
-      <div class="form-group">
-        <label>Password</label>
-        <input
-          type="password"
-          v-model="form.password"
-          placeholder="Password"
+          placeholder="연락처를 입력해 주세요"
           required
         />
-        <div v-if="errors.password" class="error-message">
-            <p>{{ errors.password }}</p>
-          </div>
+      </div>
+
+      <!-- 비밀번호 -->
+      <div class="input-container">
+        <label for="password">비밀번호</label>
+        <input
+          type="password"
+          id="password"
+          v-model="form.password"
+          placeholder="비밀번호를 입력해 주세요"
+          required
+        />
       </div>
 
       <!-- 비밀번호 확인 -->
-      <div class="form-group">
-        <label>Confirm Password</label>
+      <div class="input-container">
+        <label for="confirmPassword">비밀번호 확인</label>
         <input
           type="password"
+          id="confirmPassword"
           v-model="form.confirmPassword"
-          placeholder="Confirm password"
-          required
+          placeholder="비밀번호를 확인해 주세요"
           @input="checkPasswordMatch"
-        />
-        <div v-if="passwordMismatch" class="error-message">
-            <p>비밀번호가 일치하지 않습니다.</p>
-          </div>
-      </div>
-
-       <!-- 제출 버튼 -->
-      <div class="form-group-checkbox">
-        <input
-          type="checkbox"
-          id="terms"
-          v-model="form.acceptTerms"
           required
         />
-
-        <label for="terms">I accept the terms and privacy policy</label>
+        <div v-if="passwordMismatch" class="result error">
+          비밀번호가 일치하지 않습니다.
+        </div>
       </div>
-      <button type="submit" class="btn-primary">회원가입</button>
+
+      <!-- 약관 동의 -->
+      <div class="form-group-checkbox">
+        <input type="checkbox" id="terms" v-model="form.acceptTerms" required />
+        <label for="terms">약관 및 개인정보 보호 정책에 동의합니다.</label>
+      </div>
+
+      <!-- 제출 버튼 -->
+      <div class="submit-button">
+        <button type="submit" :disabled="isSubmitting">
+          <span v-if="isSubmitting">Loading...</span>
+          <span v-else>회원가입</span>
+        </button>
+      </div>
     </form>
-    <div class="alternative">
-      <!-- <p>Or Register with</p> -->
-      <!-- <div class="social-buttons">
-        <button class="social-btn">Facebook</button>
-        <button class="social-btn">Google</button>
-        <button class="social-btn">Apple</button>
-      </div> -->
-    </div>
+
+    <!-- 성공 모달 -->
+    <Modal
+      :isVisible="showSuccessModal"
+      title="MoeimEasy"
+      modalMessage="회원가입이 성공적으로 완료되었습니다!"
+      @close="goToLogin"
+    >
+      <template #footer>
+        <button @click="goToLogin" class="confirm-button">로그인하기</button>
+      </template>
+    </Modal>
+
+    <!-- 로그인 페이지 이동 -->
     <p class="footer-text">
-      Already have an account? <a href="#" @click.prevent="goToLogin">Log in</a>
+      이미 계정이 있으신가요?
+      <a href="#" @click.prevent="goToLogin">Log in</a>
     </p>
   </div>
 </template>
 
 <script>
-
 import { formatDate } from '@fullcalendar/core';
-import api from '@/axios'
-
+import Modal from '@/components/Modal.vue';
+import api from '@/axios';
 
 export default {
-  name: "Signup",
+  name: 'Signup',
+  components: { Modal },
   data() {
     return {
       form: {
-        username: "",
-        email: "",
-        nickname:"",
-        phone:"",
-        password: "",
-        confirmPassword: "",
+        username: '',
+        email: '',
+        nickname: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
         acceptTerms: false,
       },
       errors: {},
@@ -164,8 +173,9 @@ export default {
       isSubmitting: false,
       passwordMismatch: false,
       isNicknameChecked: false,
-      isEmailChecked: false
-    }
+      isEmailChecked: false,
+      showSuccessModal: false,
+    };
   },
   mounted() {
     const isAuthenticated = localStorage.getItem('accessToken');
@@ -177,24 +187,24 @@ export default {
     /**
      * 회원가입 처리
      */
-     async handleRegister() {
-      this.errorMessage = ''
-      this.successMessage = ''
-      this.errors = {}
-      this.passwordMismatch = false
+    async handleRegister() {
+      this.errorMessage = '';
+      this.successMessage = '';
+      this.errors = {};
+      this.passwordMismatch = false;
 
       // 비밀번호 일치 여부 확인
       if (this.form.password !== this.form.confirmPassword) {
-        this.passwordMismatch = true
+        this.passwordMismatch = true;
         return;
       }
       // 중복 확인 여부 확인
       if (!this.isNicknameChecked || !this.isEmailChecked) {
-        this.errorMessage = '닉네임과 이메일 중복 확인을 완료해 주세요.'
-        return
+        this.errorMessage = '닉네임과 이메일 중복 확인을 완료해 주세요.';
+        return;
       }
 
-      this.isSubmitting = true
+      this.isSubmitting = true;
 
       try {
         // 회원가입 API 호출: POST /api/v1/signup
@@ -203,288 +213,312 @@ export default {
           nickname: this.form.nickname,
           email: this.form.email,
           phone: this.form.phone,
-          password: this.form.password
-        })
+          password: this.form.password,
+        });
 
         if (response.status === 201) {
-          this.successMessage = response.data.message
-          this.resetForm(true) // 성공 시 폼 초기화 유지
+          this.successMessage = response.data.message;
+          this.resetForm(true); // 성공 시 폼 초기화 유지
+          this.showSuccessModal = true;
         } else {
-          this.errorMessage = '회원가입에 실패했습니다. 다시 시도해 주세요.'
+          this.errorMessage = '회원가입에 실패했습니다. 다시 시도해 주세요.';
         }
       } catch (error) {
         if (error.response) {
           if (error.response.status === 400) {
             // Validation 에러
-            this.errors = error.response.data
+            this.errors = error.response.data;
           } else if (error.response.status === 409) {
             // 중복된 이메일 또는 닉네임
-            this.errorMessage = error.response.data.error
+            this.errorMessage = error.response.data.error;
           } else {
             // 기타 에러
-            this.errorMessage = error.response.data.error || '회원가입 중 오류가 발생했습니다.'
+            this.errorMessage =
+              error.response.data.error || '회원가입 중 오류가 발생했습니다.';
           }
         } else {
-          this.errorMessage = '서버와의 연결이 원활하지 않습니다.'
+          this.errorMessage = '서버와의 연결이 원활하지 않습니다.';
         }
-        console.error('회원가입 오류:', error)
+        console.error('회원가입 오류:', error);
       } finally {
-        this.isSubmitting = false
+        this.isSubmitting = false;
       }
     },
 
     /**
      * 로그인 페이지로 이동
      */
-     goToLogin() {
-      this.$router.push("/login");
+    goToLogin() {
+      this.$router.push('/login');
     },
-        /**
+    /**
      * 폼 초기화
      * @param {boolean} keepSuccess - 성공 메시지를 유지할지 여부
      */
-     resetForm(keepSuccess = false) {
+    resetForm(keepSuccess = false) {
       this.form = {
         name: '',
         nickname: '',
         email: '',
         phone: '',
         password: '',
-        confirmPassword: ''
-      }
-      this.errors = {}
+        confirmPassword: '',
+      };
+      this.errors = {};
       if (!keepSuccess) {
-        this.errorMessage = ''
-        this.successMessage = ''
+        this.errorMessage = '';
+        this.successMessage = '';
       }
-      this.feedbackNickname = ''
-      this.feedbackEmail = ''
-      this.feedbackNicknameClass = ''
-      this.feedbackEmailClass = ''
-      this.passwordMismatch = false
-      this.isNicknameChecked = false
-      this.isEmailChecked = false
+      this.feedbackNickname = '';
+      this.feedbackEmail = '';
+      this.feedbackNicknameClass = '';
+      this.feedbackEmailClass = '';
+      this.passwordMismatch = false;
+      this.isNicknameChecked = false;
+      this.isEmailChecked = false;
       // 리디렉션: 로그인 페이지로 이동 (필요 시 수정)
       // this.$router.push('/login')
     },
 
-      /**
+    /**
      * 닉네임 중복 확인
      */
-     async checkNickname() {
-      const nickname = this.form.nickname.trim()
+    async checkNickname() {
+      const nickname = this.form.nickname.trim();
       if (nickname === '') {
-        this.feedbackNicknameClass = 'feedback-message error'
-        this.feedbackNickname = '닉네임을 입력해 주세요.'
-        this.isNicknameChecked = false
-        return
+        this.feedbackNicknameClass = 'feedback-message error';
+        this.feedbackNickname = '닉네임을 입력해 주세요.';
+        this.isNicknameChecked = false;
+        return;
       }
 
       try {
         const response = await api.get('/api/v1/signup/check-nickname', {
-          params: { nickname }
-        })
-        const data = response.data
+          params: { nickname },
+        });
+        const data = response.data;
 
         if (data.exists) {
-          this.feedbackNicknameClass = 'feedback-message error'
-          this.feedbackNickname = '이미 사용 중인 닉네임입니다.'
-          this.isNicknameChecked = false
+          this.feedbackNicknameClass = 'feedback-message error';
+          this.feedbackNickname = '이미 사용 중인 닉네임입니다.';
+          this.isNicknameChecked = false;
         } else {
-          this.feedbackNicknameClass = 'feedback-message success'
-          this.feedbackNickname = '사용 가능한 닉네임입니다.'
-          this.isNicknameChecked = true
+          this.feedbackNicknameClass = 'feedback-message success';
+          this.feedbackNickname = '사용 가능한 닉네임입니다.';
+          this.isNicknameChecked = true;
         }
       } catch (error) {
-        this.feedbackNicknameClass = 'feedback-message error'
-        this.feedbackNickname = '닉네임 중복 확인 중 오류가 발생했습니다.'
-        this.isNicknameChecked = false
-        console.error('닉네임 중복 확인 오류:', error)
+        this.feedbackNicknameClass = 'feedback-message error';
+        this.feedbackNickname = '닉네임 중복 확인 중 오류가 발생했습니다.';
+        this.isNicknameChecked = false;
+        console.error('닉네임 중복 확인 오류:', error);
       }
     },
 
     /**
      * 이메일 중복 확인
      */
-     async checkEmail() {
-      const email = this.form.email.trim()
+    async checkEmail() {
+      const email = this.form.email.trim();
       if (email === '') {
-        this.feedbackEmailClass = 'feedback-message error'
-        this.feedbackEmail = '이메일을 입력해 주세요.'
-        this.isEmailChecked = false
-        return
+        this.feedbackEmailClass = 'feedback-message error';
+        this.feedbackEmail = '이메일을 입력해 주세요.';
+        this.isEmailChecked = false;
+        return;
       }
 
       try {
         const response = await api.get('/api/v1/signup/check-email', {
-          params: { email }
-        })
-        const data = response.data
+          params: { email },
+        });
+        const data = response.data;
 
         if (data.exists) {
-          this.feedbackEmailClass = 'feedback-message error'
-          this.feedbackEmail = '이미 사용 중인 이메일입니다.'
-          this.isEmailChecked = false
+          this.feedbackEmailClass = 'feedback-message error';
+          this.feedbackEmail = '이미 사용 중인 이메일입니다.';
+          this.isEmailChecked = false;
         } else {
-          this.feedbackEmailClass = 'feedback-message success'
-          this.feedbackEmail = '사용 가능한 이메일입니다.'
-          this.isEmailChecked = true
+          this.feedbackEmailClass = 'feedback-message success';
+          this.feedbackEmail = '사용 가능한 이메일입니다.';
+          this.isEmailChecked = true;
         }
       } catch (error) {
-        this.feedbackEmailClass = 'feedback-message error'
-        this.feedbackEmail = '이메일 중복 확인 중 오류가 발생했습니다.'
-        this.isEmailChecked = false
-        console.error('이메일 중복 확인 오류:', error)
+        this.feedbackEmailClass = 'feedback-message error';
+        this.feedbackEmail = '이메일 중복 확인 중 오류가 발생했습니다.';
+        this.isEmailChecked = false;
+        console.error('이메일 중복 확인 오류:', error);
       }
     },
 
     /**
      * 닉네임 입력 시 중복 확인 상태 리셋
      */
-     resetNicknameCheck() {
+    resetNicknameCheck() {
       if (this.isNicknameChecked) {
-        this.isNicknameChecked = false
-        this.feedbackNickname = '닉네임 중복 확인을 다시 해주세요.'
-        this.feedbackNicknameClass = 'feedback-message warning'
+        this.isNicknameChecked = false;
+        this.feedbackNickname = '닉네임 중복 확인을 다시 해주세요.';
+        this.feedbackNicknameClass = 'feedback-message warning';
       }
     },
 
     /**
      * 이메일 입력 시 중복 확인 상태 리셋
      */
-     resetEmailCheck() {
+    resetEmailCheck() {
       if (this.isEmailChecked) {
-        this.isEmailChecked = false
-        this.feedbackEmail = '이메일 중복 확인을 다시 해주세요.'
-        this.feedbackEmailClass = 'feedback-message warning'
+        this.isEmailChecked = false;
+        this.feedbackEmail = '이메일 중복 확인을 다시 해주세요.';
+        this.feedbackEmailClass = 'feedback-message warning';
       }
     },
     //   console.log("회원가입 성공:", this.form.username);
     //   // 회원가입 완료 후 로그인 페이지로 이동
     //   this.$router.push("/login");
     // },
-  /**
+    /**
      * 비밀번호 일치 여부 확인
      */
     checkPasswordMatch() {
       if (this.form.password !== this.form.confirmPassword) {
-        this.passwordMismatch = true
+        this.passwordMismatch = true;
       } else {
-        this.passwordMismatch = false
+        this.passwordMismatch = false;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
-/* 스타일 추가 */
-.signup-container {
-  min-width: 500px;
+/* 전체 카드 컨테이너 스타일 */
+.card-container {
   width: 400px;
   margin: 50px auto;
-  padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #fff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background-color: #fff;
 }
 
+/* 타이틀 스타일 */
 .title {
+  font-size: 1.3rem;
   font-weight: bold;
   text-align: center;
+  margin-bottom: 1.5rem;
   color: #414651;
-  margin-bottom: 20px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-  position: relative; /* position을 relative로 설정 */
+/* 폼 전체 스타일 */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
+/* 입력 필드 스타일 */
+.input-container {
+  display: flex;
+  flex-direction: column;
+}
 
-label {
-  color: #414651;
-  display: block;
-
+.input-container label {
   margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"], 
-input[type="nickname"], 
-input[type="tel"]{
-  width: 100%; /* 모든 입력란 길이 동일하게 설정 */
-  padding: 10px 40px 10px 10px; /* 오른쪽에 버튼이 들어갈 공간 추가 */
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-  box-sizing: border-box; /* 패딩 포함한 크기 계산 */
-  height: 40px; /* 입력란 높이 설정 */
-  /* width: 100%;
+.input-container input {
   padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px; */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
+
+.input-container input:focus {
+  border-color: #8a4af3;
+  outline: none;
+  box-shadow: 0 0 5px rgba(138, 74, 243, 0.3);
+}
+
+/* 중복 확인 버튼 스타일 */
+.check-button {
+  margin-top: 10px;
+  background-color: #8a4af3;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.check-button:hover {
+  background-color: #6c38cc;
+}
+
+/* 약관 동의 체크박스 스타일 */
 .form-group-checkbox {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .form-group-checkbox input {
-  margin-right: 10px;
+  width: 16px;
+  height: 16px;
 }
 
-.btn-primary {
-  display: block;
+/* 제출 버튼 스타일 */
+.submit-button button {
   width: 100%;
-  background-color: #7f56d9;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #8a4af3;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
-  margin-top: 10px;
+  transition: background-color 0.3s ease;
 }
 
-.btn-primary:hover {
-  background-color: #6a48b0;
+.submit-button button:hover {
+  background-color: #6c38cc;
 }
-.alternative {
-  color: #414651;
+
+.submit-button button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 결과 메시지 스타일 */
+.result {
   text-align: center;
-  margin-top: 20px;
+  font-size: 0.9rem;
 }
 
-.social-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
+.result.success {
+  color: green;
 }
 
-.social-btn {
-  background-color: #f1f1f1;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
+.result.error {
+  color: red;
 }
 
+/* 로그인 페이지 이동 링크 */
 .footer-text {
-  color: #414651;
+  color: #555;
   text-align: center;
   margin-top: 20px;
 }
 
 .footer-text a {
-  color: #7f56d9;
+  color: #8a4af3;
   text-decoration: none;
   font-weight: bold;
 }
@@ -492,33 +526,17 @@ input[type="tel"]{
 .footer-text a:hover {
   text-decoration: underline;
 }
+.confirm-button {
+  background-color: #8a4af3;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-.check-button {
-  position: absolute; /* 입력란 안쪽에 위치하도록 설정 */
-  top: 50%; /* 입력란의 중앙에 정렬 */
-  right: 10px; /* 입력란 오른쪽 끝에서 10px 떨어짐 */
-  transform: translateY(-50%); /* 수직 중앙 정렬 */
-  height: 28px; /* 입력란 높이에 맞게 버튼 높이 설정 */
-  padding: 0 11px; /* 버튼 크기 조정 */
-  background-color: #7f56d9;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 30px; /* 버튼 텍스트 수직 정렬 */
-  transition: background-color 0.3s;
-  box-sizing: border-box; /* 패딩 포함 크기 계산 */
-  /* position: absolute;
-  right: 10px;
-  top: 43px;
-  padding: 6px 12px;
-  background-color: #7f56d9;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s; */
+.confirm-button:hover {
+  background-color: #6c38cc;
 }
 </style>

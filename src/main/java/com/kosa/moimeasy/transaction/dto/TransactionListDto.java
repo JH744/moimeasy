@@ -2,16 +2,13 @@ package com.kosa.moimeasy.transaction.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.kosa.moimeasy.transaction.type.TransactionType;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
-public class TransactionListDto {
+public class TransactionListDto { // 거래내역(리스트) 조회
 
     @Getter
     @Setter

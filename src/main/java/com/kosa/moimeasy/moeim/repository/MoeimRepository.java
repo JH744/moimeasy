@@ -1,11 +1,12 @@
 package com.kosa.moimeasy.moeim.repository;
 
-import java.util.Optional;
 import com.kosa.moimeasy.moeim.entity.Moeim;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface MoeimRepository extends JpaRepository<Moeim, Long> {
@@ -25,4 +26,5 @@ public interface MoeimRepository extends JpaRepository<Moeim, Long> {
     // 유저 아이디로 모임 조회
     @Query("SELECT m FROM Moeim m WHERE m.user.userId = :userId")
     Optional<Moeim> findByUserId(@Param("userId") Long userId);
+
 }

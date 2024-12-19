@@ -22,7 +22,7 @@ public class ChatRoom extends BaseTimeEntity {
     private String name; // 채팅방 이름
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // members 필드는 필요 없으면 응답에서 제외
+    @JsonIgnore // 순환 참조 방지
     private List<ChatRoomUser> members = new ArrayList<>();
 
     @Column(nullable = false)

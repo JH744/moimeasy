@@ -40,10 +40,23 @@ public class SettlementController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 인증이 필요합니다.");
         }
 
+        if (requestDTO.getTitle() == null || requestDTO.getTitle().isEmpty()) {
+            return ResponseEntity.badRequest().body("제목을 입력해 주세요.");
+        }
+        if (requestDTO.getImageUrl() == null || requestDTO.getImageUrl().isEmpty()) {
+            return ResponseEntity.badRequest().body("영수증 이미지를 첨부해 주세요.");
+        }
+        if (requestDTO.getAmount() <= 0) {
+            return ResponseEntity.badRequest().body("요청 금액은 0보다 커야 합니다.");
+        }
+
         Long userId = Long.valueOf(userDetails.getUsername());
         settlementService.createRequest(requestDTO, userId);
+
         return ResponseEntity.ok("정산 요청이 성공적으로 제출되었습니다.");
     }
+
+
 
     /**
      * 정산 요청 승인

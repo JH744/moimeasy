@@ -44,7 +44,8 @@ spring:
   include: key
 
 server:
- port: 8088
+ address: 0.0.0.0 # 모든 IP에서 접근 허용
+ port: 8088    # 원하는 포트를 설정 (기본값: 8088)
 
 springdoc:
  version: V0.0.1

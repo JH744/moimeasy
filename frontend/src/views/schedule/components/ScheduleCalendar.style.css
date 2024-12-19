@@ -180,6 +180,17 @@
     color: #fd7385 !important;
   }
 }
+.custom-event2 {
+  background-color: #dbf1f7;
+  border: none;
+  border-left: 4px solid #289ebd !important;
+  i {
+    color: #289ebd !important;
+  }
+  b {
+    color: #289ebd !important;
+  }
+}
 
 /* 다이얼로그 커스텀 */
 .fc-direction-ltr {
@@ -219,4 +230,30 @@
 }
 .select-style {
   width: 100%;
+}
+
+.p-select-option:nth-child(1) {
+  &:hover {
+    background-color: #ffe2e6 !important;
+  }
+}
+.p-select-option:nth-child(2) {
+  &:hover {
+    background-color: #fff4e7 !important;
+  }
+}
+.p-select-option:nth-child(3) {
+  &:hover {
+    background-color: #ebe2fd !important;
+  }
+}
+.p-select-option:nth-child(4) {
+  &:hover {
+    background-color: #e4f8f1 !important;
+  }
+}
+.p-select-option:nth-child(5) {
+  &:hover {
+    background-color: #dbf1f7 !important;
+  }
 }

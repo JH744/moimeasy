@@ -18,5 +18,4 @@ public class CustomException extends RuntimeException {
         this.errorCode = errorCode;
         this.errorMessage = errorCode.getDescription();
     }
-
 }

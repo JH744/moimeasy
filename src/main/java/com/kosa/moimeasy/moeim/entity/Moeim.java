@@ -1,7 +1,6 @@
 package com.kosa.moimeasy.moeim.entity;
 
 import com.kosa.moimeasy.transaction.entity.Transaction;
-import com.kosa.moimeasy.transaction.entity.TransactionSample;
 import com.kosa.moimeasy.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;

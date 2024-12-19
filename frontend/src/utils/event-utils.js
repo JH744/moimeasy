@@ -13,7 +13,9 @@ export const INITIAL_EVENTS = [
     start: todayStr + 'T17:00:00',
   },
 ];
-
+// 이벤트 고유아이디 생성
 export function createEventId() {
-  return String(eventGuid++);
+  const timestamp = Date.now(); // 현재 시간 (밀리초 단위)
+  const randomPart = Math.random().toString(36).slice(2, 11); // 난수에서 일부 문자열만 추출
+  return `${timestamp}-${randomPart}`;
 }

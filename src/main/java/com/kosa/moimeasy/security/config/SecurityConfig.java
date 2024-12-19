@@ -39,7 +39,7 @@ public class SecurityConfig {
                             config.addAllowedOrigin("*");
                             config.setAllowedOrigins(List.of("http://localhost:3000")); //Vue.js
 
-                            config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH" , "OPTIONS"));
                             config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Refresh-Token"));
                             config.setAllowCredentials(true); //쿠키 전송 허용
                             return config;

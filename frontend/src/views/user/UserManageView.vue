@@ -5,8 +5,15 @@
       <span
         ><strong>총 회원 수: {{ filteredUsers.length }}</strong></span
       >
-      <button class="btn-invite" @click="inviteMember">회원 초대</button>
+      <button class="btn-invite" @click="toggleInviteModal">회원 초대</button>
     </div>
+    <Dialog
+      v-model:visible="isInviteModalVisible"
+      :style="{ width: '40vw' }"
+      header="회원 초대"
+    >
+      <Invite @close="toggleInviteModal" />
+    </Dialog>
 
     <div class="filter-container">
       <select v-model="selectedSort" class="filter-dropdown">
@@ -56,8 +63,10 @@
 <script>
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
+import Invite from '@/views/user/InviteUserView.vue';
 
 export default {
+  components: { Invite },
   data() {
     return {
       headers: [
@@ -71,6 +80,7 @@ export default {
       selectedSort: 'newest',
       currentPage: 1,
       rowsPerPage: 5,
+      isInviteModalVisible: false,
     };
   },
   setup() {
@@ -102,6 +112,10 @@ export default {
     },
   },
   methods: {
+    toggleInviteModal() {
+      this.isInviteModalVisible = !this.isInviteModalVisible;
+      console.log('Updated isInviteModalVisible:', this.isInviteModalVisible);
+    },
     async fetchUsers() {
       try {
         const token = this.authStore.accessToken;
@@ -169,9 +183,9 @@ export default {
 
 <style scoped>
 .member-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  width: 98%;
+
+  margin: 10px;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;

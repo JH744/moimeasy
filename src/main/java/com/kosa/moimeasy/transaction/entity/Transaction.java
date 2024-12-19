@@ -6,7 +6,10 @@ import com.kosa.moimeasy.transaction.type.TransactionType;
 import com.kosa.moimeasy.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,10 +20,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class) // Auditing 기능 활성화
 public class Transaction extends BaseEntity {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -32,20 +35,23 @@ public class Transaction extends BaseEntity {
     @JoinColumn(name = "user_Id")
     private User userAccount; // 유저 계좌
 
-    @Enumerated(EnumType.STRING)
-    private TransactionType transactionType;
-
     @NotNull
     private double amount; // 이체 금액
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType; // 거래 유형(입금, 출금, 이체)
 
     private String depositName; // 입금자명
 
     private String withdrawName; // 출금자명
 
-    private String receivedName; // 송금받는 계좌주명
+    private String receivedName; // 송금받는 계좌명
 
     private String receivedAccount; // 송금받는 계좌번호
 
+    private String categoryName; // 소비항목
+
     @CreatedDate
     private LocalDateTime transactedAt; // 거래 시간
+
 }

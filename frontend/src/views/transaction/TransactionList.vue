@@ -10,10 +10,7 @@
       </div>
     </div>
     <div class="card datatable-card">
-      <template v-if="loading">
-        <p>데이터를 불러오는 중입니다...</p>
-      </template>
-      <template v-else-if="products.length">
+      <template v-if="products.length">
         <DataTable :value="products" ref="dt" class="centered-datatable" tableStyle="min-width: 50rem">
           <template #header>
             <div class="export-button-container">
@@ -34,12 +31,14 @@
 <script setup>
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import PayMenuList from './PayMenuList.vue';
+import PayMenuList from './TransactionMenuList.vue';
 import Button from 'primevue/button';
 import axios from "axios";
 import 'primeicons/primeicons.css';
 import { ref, onMounted } from 'vue';
+import { useLoadingStore } from '@/stores/useLoadingStore';
 
+const loadingStore = useLoadingStore();
 const currentMonth = ref('');
 const dt = ref();
 const products = ref([]); // 초기 값으로 빈 배열 설정
@@ -49,11 +48,12 @@ const columns = [
   { field: 'tradedate', header: '날짜' },
   { field: 'tradelist', header: '거래내역' },
   { field: 'trademoney', header: '금액' },
+  { field: 'tradetype', header: '구분' },
 ];
 
 // 데이터 불러오기 함수
 const fetchTransactions = async () => {
-  loading.value = true; // 로딩 상태 시작
+  loadingStore.startLoading();  // 로딩 시작
   try {
     const accessToken = localStorage.getItem('accessToken');
     const userRaw = localStorage.getItem('user');
@@ -70,11 +70,11 @@ const fetchTransactions = async () => {
       return;
     }
 
-    const startOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0);
+    const startOfMonth = new Date(Date.UTC(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1));
+    const endOfMonth = new Date(Date.UTC(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0));
 
     const response = await axios.get('/api/v1/transaction/transaction-list', {
-      headers: { Authorization: accessToken.trim() },
+      headers: { Authorization: `Bearer ${accessToken}` },
       params: {
         moeimId: moeimId,
         startDate: startOfMonth.toISOString().split('T')[0],
@@ -87,6 +87,7 @@ const fetchTransactions = async () => {
         tradedate: transaction.transactedAt,
         tradelist: transaction.transactionTargetName,
         trademoney: transaction.amount,
+        tradetype: transaction.type,
       }));
     } else {
       products.value = [];
@@ -96,7 +97,7 @@ const fetchTransactions = async () => {
     console.error('거래내역을 가져오는 중 오류가 발생했습니다:', error);
     products.value = [];
   } finally {
-    loading.value = false; // 로딩 상태 종료
+    loadingStore.stopLoading(); // 로딩 중지
   }
 };
 

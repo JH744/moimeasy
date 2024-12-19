@@ -9,29 +9,30 @@
     <ul>
       <li
         v-for="room in rooms"
-        :key="room.id"
-        @click="enterRoom(room.id)"
+        :key="room.id || room.roomId"
+        @click="enterRoom(room.id || room.roomId)"
         class="room-item"
       >
         <div class="room-header">
-          <!-- 채팅방명이 있을 경우 표시 -->
-          <span v-if="room.name" class="room-name">{{ room.name }}</span>
-          <!-- 채팅방명이 없으면 참여자 닉네임 표시 -->
+          <span v-if="room.roomName" class="room-name">{{
+            room.roomName
+          }}</span>
           <span v-else class="room-name">
             {{
-              Array.isArray(room.members)
-                ? room.members.map((member) => member.userNickname).join(', ')
+              Array.isArray(room.memberNicknames) &&
+              room.memberNicknames.length > 0
+                ? room.memberNicknames.join(', ')
                 : '참여자 없음'
             }}
           </span>
         </div>
         <hr />
-        <!-- 참여자 목록을 채팅방명이 있더라도 항상 표시 -->
         <p class="room-participants">
           참여자:
           {{
-            Array.isArray(room.members)
-              ? room.members.map((member) => member.userNickname).join(', ')
+            Array.isArray(room.memberNicknames) &&
+            room.memberNicknames.length > 0
+              ? room.memberNicknames.join(', ')
               : '참여자 없음'
           }}
         </p>
@@ -144,7 +145,7 @@ export default {
         console.log('Rooms API response:', response.data);
         this.rooms = response.data.map((room) => ({
           ...room,
-          members: room.members || [], // members가 null/undefined인 경우 빈 배열로 설정
+          members: room.memberNicknames || [],
         }));
       } catch (error) {
         console.error('Error fetching chat rooms:', error);

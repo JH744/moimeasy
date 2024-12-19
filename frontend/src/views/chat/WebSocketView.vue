@@ -7,12 +7,7 @@
       </div>
     </div>
     <div class="input-container">
-      <input
-        v-model="newMessage"
-        @keyup.enter="sendMessage"
-        class="message-input"
-        placeholder="메시지를 입력하세요"
-      />
+      <input v-model="newMessage" @keyup.enter="sendMessage" class="message-input" placeholder="메시지를 입력하세요" />
       <button @click="sendMessage" class="send-button">전송</button>
     </div>
   </div>

@@ -6,6 +6,8 @@ import com.kosa.moimeasy.chat.entity.ChatRoom;
 import com.kosa.moimeasy.chat.entity.ChatMessage;
 import com.kosa.moimeasy.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -33,19 +37,13 @@ public class ChatController {
 
     // 채팅방 목록 조회
     @GetMapping("/rooms")
-    public ResponseEntity<List<ChatRoom>> getAllRooms(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<CreateRoomDTO>> getAllRooms(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Long userId = Long.valueOf(userDetails.getUsername()); // 사용자 ID 추출
         List<ChatRoom> chatRooms = chatService.getAllRooms(userId);
-
-//        // 필요한 데이터만 포함하도록 members 필터링
-//        chatRooms.forEach(chatRoom -> chatRoom.getMembers().forEach(member -> {
-//            member.setChatRoom(null); // 순환 참조 방지
-//        }));
-
 
         // ChatRoom 데이터를 CreateRoomDTO로 변환
         List<CreateRoomDTO> roomDTOs = chatRooms.stream().map(chatRoom -> {
@@ -57,16 +55,17 @@ public class ChatController {
             List<String> memberNicknames = chatService.getMemberNicknames(memberIds);
 
             return new CreateRoomDTO(
-                    chatRoom.getName(), // 채팅방 이름
+                    chatRoom.getId(),
+                    chatRoom.getName(),      // 채팅방 이름
                     chatRoom.getCreatedBy(), // 생성자 ID
-                    memberIds, // 참여자 ID 목록
-                    memberNicknames // 참여자 닉네임 목록
+                    memberIds,               // 참여자 ID 목록
+                    memberNicknames          // 참여자 닉네임 목록
             );
         }).collect(Collectors.toList());
 
-
-        return ResponseEntity.ok(chatRooms);
+        return ResponseEntity.ok(roomDTOs); // DTO로 반환
     }
+
 
 
 
@@ -98,7 +97,7 @@ public class ChatController {
 
     // 새로운 메시지 폴링
     @GetMapping("/rooms/{roomId}/poll-messages")
-    public ResponseEntity<List<ChatMessage>> pollMessages(
+    public ResponseEntity<List<Map<String, Object>>> pollMessages(
             @PathVariable Long roomId,
             @RequestParam Long lastMessageId,
             @AuthenticationPrincipal UserDetails userDetails
@@ -108,10 +107,13 @@ public class ChatController {
         }
 
         Long userId = Long.valueOf(userDetails.getUsername());
-        // Optional: 사용자가 해당 방의 멤버인지 검증 로직 추가 가능
-        List<ChatMessage> messages = chatService.getMessagesSince(roomId, lastMessageId);
+        // 메시지 조회 및 반환
+        List<Map<String, Object>> messages = chatService.getMessagesSince(roomId, lastMessageId);
         return ResponseEntity.ok(messages);
     }
+
+
+
 
 
 

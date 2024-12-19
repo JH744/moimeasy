@@ -32,7 +32,7 @@ public class InvitationService {
     @Autowired
     private MoeimRepository moeimRepository;
 
-    public void sendInvitation(Long userId, EmailRequest request, String htmlContent) {
+    public String sendInvitation(Long userId, EmailRequest request, String htmlContent) {
         if (userId == null) {
             throw new IllegalArgumentException("userId는 null일 수 없습니다.");
         }
@@ -56,10 +56,10 @@ public class InvitationService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
-            String finalHtmlContent = htmlContent + "<p>모임 코드: " + moeimCode + "</p>";
+            String finalHtmlContent = htmlContent + "";
             helper.setTo(request.getEmail());
             helper.setSubject("MoeimEasy 초대");
-            helper.setText(finalHtmlContent, true); // HTML 콘텐츠 설정
+            helper.setText(finalHtmlContent, true);
             helper.setFrom("moeimeasy@gmail.com", "MoeimEasy Team");
 
             mailSender.send(mimeMessage);
@@ -72,10 +72,14 @@ public class InvitationService {
             invitation.setCreatedAt(LocalDateTime.now());
             invitationRepository.save(invitation);
 
+            // 모임 코드 반환
+            return moeimCode;
+
         } catch (Exception e) {
             throw new RuntimeException("이메일 전송 실패: " + e.getMessage());
         }
     }
+
 
     public List<Invitation> getAllInvitations(Long userId) {
         // 사용자의 moeimId를 기반으로 초대 목록 필터링
@@ -86,4 +90,3 @@ public class InvitationService {
         return invitationRepository.findByMoeimId(moeimId);
     }
 }
-

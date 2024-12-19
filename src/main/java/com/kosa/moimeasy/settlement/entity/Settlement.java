@@ -32,6 +32,9 @@ public class Settlement extends BaseTimeEntity {
     @Column(name = "settlement_status", nullable = false)
     private SettlementStatus status = SettlementStatus.PENDING;
 
+    public Settlement() {
+    }
+
     public Settlement(String title, String imageUrl, User user, double amount) {
         this.title = title;
         this.imageUrl = imageUrl;

@@ -46,7 +46,7 @@ public class User extends BaseEntity {
 
 
     @Column(name = "last_notification_viewed_at")
-    private LocalDateTime lastNotificationViewedAt;
+    private LocalDateTime lastNotificationViewedAt; // 마지막으로 확인한 알림시간
 
     @Column(nullable = true)
     private Long moeimId;

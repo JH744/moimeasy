@@ -26,7 +26,11 @@
       </Column>
       <Column field="userName" header="작성자"></Column>
       <Column field="amount" header="금액"></Column>
-      <Column field="date" header="날짜"></Column>
+      <Column field="createdAt" header="날짜">
+        <template #body="slotProps">
+          {{ formatDate(slotProps.data.createdAt) }}
+        </template>
+      </Column>
       <Column header="영수증">
         <template #body="slotProps">
           <img
@@ -67,13 +71,12 @@
         </div>
         <div class="p-field">
           <label for="file">영수증 첨부</label>
-          <FileUpload
-            mode="basic"
-            name="file"
+          <input
+            type="file"
+            id="file"
             accept="image/*"
-            customUpload
-            @uploader="onFileUpload"
-            chooseLabel="파일 선택"
+            @change="onFileChange"
+            class="file-input"
           />
         </div>
       </div>
@@ -89,7 +92,7 @@
           icon="pi pi-check"
           class="p-button-primary"
           @click="submitRequest"
-          :disabled="!imageUrl"
+          :disabled="isSubmitDisabled"
         />
       </template>
     </Dialog>
@@ -102,9 +105,9 @@
       modal
     >
       <div class="detail-view">
-        <h3>{{ selectedRequest.title }}</h3>
+        <h3><strong>제목:</strong>{{ selectedRequest.title }}</h3>
         <p><strong>작성자:</strong> {{ selectedRequest.userName }}</p>
-        <p><strong>날짜:</strong> {{ selectedRequest.date }}</p>
+        <p><strong>날짜:</strong> {{ selectedRequest.createdAt }}</p>
         <img
           :src="selectedRequest.imageUrl"
           alt="영수증"
@@ -125,7 +128,7 @@
 
 <script>
 import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { firebaseStorage } from '@/firebase/firebaseConfig';
 import {
@@ -157,105 +160,89 @@ export default {
     const title = ref('');
     const amount = ref('');
     const imageUrl = ref('');
-    const uploadProgress = ref(0);
+    const selectedFile = ref(null); // 선택된 파일
+    const isSubmitDisabled = ref(true);
     const authStore = useAuthStore();
 
-    // 모달 열기
+    // 날짜 포맷 함수
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    // 파일 선택 처리
+    const onFileChange = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Firebase에 파일 업로드
+      const filePath = `settlement_receipts/${authStore.user?.userId}/${Date.now()}_${file.name}`;
+      const storageRef = firebaseRef(firebaseStorage, filePath);
+
+      try {
+        await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(storageRef);
+        imageUrl.value = downloadUrl; // Firebase URL 저장
+        console.log('File uploaded successfully:', downloadUrl);
+      } catch (error) {
+        console.error('파일 업로드 실패:', error);
+        alert('파일 업로드 중 오류가 발생했습니다.');
+      }
+    };
+
+    // 제출 버튼 활성화 상태 감지
+    watch([title, amount, imageUrl], () => {
+      isSubmitDisabled.value = !title.value || !amount.value || !imageUrl.value;
+    });
+
+    // 정산 요청 제출
+    const submitRequest = async () => {
+      if (isSubmitDisabled.value) return;
+
+      try {
+        const payload = {
+          title: title.value,
+          amount: parseFloat(amount.value),
+          imageUrl: imageUrl.value, // Firebase URL 전송
+        };
+
+        await axios.post('/api/v1/settlements/create', payload, {
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
+        });
+
+        closeModal();
+        await fetchRequests();
+      } catch (error) {
+        console.error('Error submitting request:', error);
+        alert('정산 요청 중 오류가 발생했습니다.');
+      }
+    };
+
+    // 모달 열기/닫기
     const openModal = () => {
       isModalVisible.value = true;
     };
 
-    // 모달 닫기
     const closeModal = () => {
       isModalVisible.value = false;
       title.value = '';
       amount.value = '';
       imageUrl.value = '';
-      uploadProgress.value = 0;
-    };
-
-    // 파일 업로드
-    const onFileUpload = async (event) => {
-      const file = event.files[0];
-      if (!file) {
-        console.warn('파일이 선택되지 않았습니다.');
-        return;
-      }
-
-      const filePath = `settlement_receipts/${authStore.user?.userId}/${file.name}`;
-      const storageRef = firebaseRef(firebaseStorage, filePath);
-
-      try {
-        console.log('Uploading file to Firebase:', file.name);
-        const snapshot = await uploadBytes(storageRef, file);
-        console.log('File uploaded successfully:', snapshot);
-
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        console.log('File download URL:', downloadUrl);
-
-        imageUrl.value = downloadUrl; // 이미지 URL 저장
-      } catch (error) {
-        console.error('파일 업로드 실패:', error);
-        alert('파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.');
-      }
-    };
-
-    // 정산 요청 제출
-    const submitRequest = async () => {
-      const token = authStore.token; // 토큰 가져오기
-      if (!token) {
-        alert('인증이 필요합니다. 다시 로그인해 주세요.');
-        return;
-      }
-
-      try {
-        const payload = {
-          title: title.value,
-          imageUrl: imageUrl.value,
-          amount: parseFloat(amount.value),
-        };
-
-        await axios.post('/api/v1/settlements/create', payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        closeModal();
-        fetchRequests();
-      } catch (error) {
-        console.error('Error submitting request:', error);
-      }
+      selectedFile.value = null;
     };
 
     // 정산 요청 목록 불러오기
     const fetchRequests = async () => {
-      const token = authStore.accessToken; // 토큰 가져오기
-      console.log('Access Token:', token);
-
-      if (!token) {
-        console.warn('인증이 필요합니다.');
-        return;
-      }
-
       try {
         const response = await axios.get('/api/v1/settlements/all', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
         });
-
-        settlementRequests.value = response.data.map((req) => ({
-          title: req.title,
-          userName: req.userName,
-          amount: req.amount, // 금액 추가
-          date: req.createdAt, // 날짜
-          imageUrl: req.imageUrl, // 영수증 이미지
-        }));
+        settlementRequests.value = response.data;
       } catch (error) {
-        console.error('Error fetching invitations:', error);
-        if (error.response?.status === 401) {
-          alert('인증이 만료되었습니다. 다시 로그인해 주세요.');
-        }
+        console.error('Error fetching requests:', error);
       }
     };
 
@@ -280,14 +267,16 @@ export default {
       title,
       amount,
       imageUrl,
-      uploadProgress,
+      selectedFile,
+      isSubmitDisabled,
       selectedRequest,
       openModal,
       closeModal,
-      onFileUpload,
+      onFileChange,
       submitRequest,
       openDetailModal,
       closeDetailModal,
+      formatDate,
     };
   },
 };
@@ -295,9 +284,8 @@ export default {
 
 <style scoped>
 .settlement-container {
-  width: 600px;
-  min-width: 600px;
-  margin: 0 auto;
+  width: 98%;
+  margin: 10px;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;

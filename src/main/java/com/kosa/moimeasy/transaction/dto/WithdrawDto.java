@@ -16,10 +16,15 @@ public class WithdrawDto {
 
         @NotBlank(message = "계좌번호는 필수값입니다.")
         private String accountNumber;
+
         @NotBlank(message = "출금자명은 필수값입니다.")
         private String withdrawName;
-        @Min(value = 1000, message = "출금 최소금액은 1000원입니다.")
+
+        @Min(value = 1, message = "출금 최소금액은 1원입니다.")
         private Long amount;
+
+        @NotBlank(message = "카테고리는 필수입니다.")
+        private String categoryName;
     }
 
     @Getter
@@ -29,6 +34,7 @@ public class WithdrawDto {
         private String accountNumber;
         private String withdrawName;
         private Long amount;
+        private String categoryName;
         private LocalDateTime transacted_at;
     }
 }

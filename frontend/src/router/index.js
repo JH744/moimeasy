@@ -15,6 +15,10 @@ import TransactionList from '@/views/transaction/TransactionList.vue';
 import Category from '@/views/transaction/Category.vue';
 import ChatRoomList from '@/views/chat/ChatRoomListView.vue';
 import ChatView from '@/views/chat/ChatView.vue';
+import FindEmailView from '@/views/find/FindEmailView.vue';
+import FindUserInfoView from '@/views/find/FindUserInfoView.vue';
+import ResetPasswordView from '@/views/find/ResetPasswordView.vue';
+
 import Settlement from '@/views/moeim/SettlementView.vue';
 // 다른 뷰를 추가로 임포트
 
@@ -29,6 +33,14 @@ const routes = [
   { path: '/create-moeim', name: 'CreateMoeim', component: CreateMoeim },
   { path: '/enter-moeim', name: 'EnterMoeim', component: EnterMoeim },
   { path: '/user-manage', name: '회원관리', component: UserManage },
+  { path: '/find-email', name: 'FindEmail', component: FindEmailView },
+  { path: '/finduser', name: 'FindUserInfo', component: FindUserInfoView },
+  {
+    path: '/resetpassword',
+    name: 'ResetPassword',
+    component: ResetPasswordView,
+  },
+
   {
     path: '/user-profile/:userId',
     name: '회원프로필',
@@ -39,7 +51,7 @@ const routes = [
     path: '/invitation-list',
     name: '초대목록',
     component: InvitationList,
-  }, 
+  },
   {
     path: '/remittance-list',
     name: 'RemittanceList',
@@ -116,7 +128,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)',
-    component: () => import('@/views/Error/Error404.vue'),
+    component: () => import('@/views/error/Error404.vue'),
   },
   {
     path: '/chat-layout',
@@ -124,6 +136,16 @@ const routes = [
     component: () => import('@/views/chat/ChatLayoutView.vue'),
   },
   { path: '/settlement', name: '정산요청', component: Settlement },
+  {
+    path: '/main',
+    name: '메인',
+    component: () => import('@/views/MainView.vue'),
+  },
+  {
+    path: '/gallery',
+    name: '갤러리',
+    component: () => import('@/views/gallery/GalleryView.vue'),
+  },
 ];
 
 const router = createRouter({
@@ -144,14 +166,24 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('accessToken'); // 인증 상태 확인
 
-  // 로그인이 필요한 페이지를 지정 (예: /main, /moeim-select)
-  const requiresAuth = !['/login', '/signup'].includes(to.path);
+  // 로그인이 필요 없는 페이지 (로그인, 회원가입 등)
+  const publicPages = [
+    '/login',
+    '/signup',
+    '/find-email',
+    '/finduser',
+    '/resetpassword',
+  ];
+  const requiresAuth = !publicPages.includes(to.path); // 인증이 필요한 페이지
 
-  if (requiresAuth && !isAuthenticated) {
-    // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+  if (isAuthenticated && to.path === '/login') {
+    // 로그인 상태에서 로그인 페이지 접근 시 메인 페이지로 리다이렉트
+    next('/main');
+  } else if (requiresAuth && !isAuthenticated) {
+    // 인증이 필요한 페이지인데 로그인 상태가 아니라면 로그인 페이지로 이동
     next('/login');
   } else {
-    // 인증된 사용자 또는 예외 경로는 그대로 진행
+    // 그 외의 경우는 정상 진행
     next();
   }
 });

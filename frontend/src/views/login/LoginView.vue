@@ -3,31 +3,31 @@
     <h2 class="title">로그인</h2>
     <form @submit.prevent="handleLogin">
       <div class="form-group">
-        <label>Email</label>
+        <label>아이디</label>
         <input
           type="email"
           v-model="form.email"
-          placeholder="Enter your email"
+          placeholder="이메일을 입력해 주세요"
           required
         />
       </div>
       <div class="form-group">
-        <label>Password</label>
+        <label>패스워드</label>
         <input
           type="password"
           v-model="form.password"
-          placeholder="Enter your password"
+          placeholder="패스워드를 입력해 주세요"
           required
         />
       </div>
       <div class="form-options">
     <div>
-      <a href="#" class="forgot-password" @click.prevent="forgotId"
+      <a href="#" class="forgot-password" @click.prevent="goToFindEmail"
           >아이디 찾기</a
         >
     </div>
-        <a href="#" class="forgot-password" @click.prevent="forgotPassword"
-          >비밀번호 찾기</a
+        <a href="#" class="forgot-password" @click.prevent="goToFindPassword"
+          >비밀번호 초기화</a
         >
       </div>
       <button type="submit" class="btn-primary">로그인</button>
@@ -67,7 +67,7 @@ export default {
         console.log('로그인 성공'); // 로그인 성공 시 필요한 로직 추가 가능
 
         // 로그인 후 moiemId 확인
-        if (this.authStore.user.moiemId === null) {
+        if (this.authStore.user.moeimId === null) {
           // moiemId가 null이면 MoeimSelectView로 이동
           this.$router.push('/moeim-select');
         } else {
@@ -88,11 +88,13 @@ export default {
       // 리디렉션: 홈으로 이동 (필요 시)
       this.$router.push('/main');
     },
-    forgotId() {
-      alert('아이디 찾기 기능은 아직 준비 중입니다.');
+    goToFindEmail() {
+    console.log('아이디 찾기 클릭'); // 로그로 이벤트 확인
+    this.$router.push('/find-email'); // FindEmailView로 이동
     },
-    forgotPassword() {
-      alert('비밀번호 찾기 기능은 아직 준비 중입니다.');
+    goToFindPassword() {
+      console.log('비밀번호 초기화 클릭'); // 로그로 이벤트 확인
+      this.$router.push('/finduser'); // FindUserView로 이동;
     },
     goToSignup() {
       console.log('회원가입 버튼 클릭');
@@ -117,6 +119,7 @@ export default {
 
 .title {
   text-align: center;
+  font-size: 1.3rem;
   color: #414651;
   font-weight: bold;
   margin-bottom: 20px;

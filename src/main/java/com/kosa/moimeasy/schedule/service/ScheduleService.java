@@ -52,4 +52,31 @@ public class ScheduleService {
     public void deleteByEventCode(String eventCode) {
         scheduleRepository.deleteByEventCode(eventCode);
     }
+
+    @Transactional
+    public void updatePartialEvent(String eventCode, ScheduleDTO partialUpdateDto) {
+        // 기존 일정 조회
+        Schedule schedule = scheduleRepository.findByEventCode(eventCode)
+                .orElseThrow(() -> new RuntimeException("해당 이벤트를 찾을 수 없습니다."));
+
+        // partialUpdateDto에 필드가 null이 아닌 경우만 업데이트
+        if (partialUpdateDto.getScheduleTitle() != null) {
+            schedule.setScheduleTitle(partialUpdateDto.getScheduleTitle());
+        }
+
+        if (partialUpdateDto.getStartTime() != null) {
+            schedule.setStartTime(partialUpdateDto.getStartTime());
+        }
+
+        if (partialUpdateDto.getEndTime() != null) {
+            schedule.setEndTime(partialUpdateDto.getEndTime());
+        }
+
+        if (partialUpdateDto.getDescription() != null) {
+            schedule.setDescription(partialUpdateDto.getDescription());
+        }
+
+        // 필요한 필드만 선택적으로 업데이트한 뒤, JPA 영속성 컨텍스트에 의해 자동으로 flush됨
+        // @Transactional로 인해 메서드 종료 시점에 변경사항이 반영
+    }
 }

@@ -50,6 +50,7 @@ public class LoginController {
             TokenResponseDTO responseBody = TokenResponseDTO.builder()
                     .userId(tokenResponseDTO.getUserId()) //dto, entity db설정 후 수정 해야할수도 있음
                     .moeimId(tokenResponseDTO.getMoeimId())//dto, entity db설정 후 수정 해야할수도 있음
+                    .profileImage(tokenResponseDTO.getProfileImage()) //dto, entity db설정 후 수정 해야할수도 있음
                     .name(tokenResponseDTO.getName()) //dto, entity db설정 후 수정 해야할수도 있음
                     .email(tokenResponseDTO.getEmail()) //dto, entity db설정 후 수정 해야할수도 있음
                     .nickname(tokenResponseDTO.getNickname()) //dto, entity db설정 후 수정 해야할수도 있음

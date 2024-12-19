@@ -70,9 +70,9 @@ export default {
 <style scoped>
 /* 테이블 스타일 */
 .list-container {
-  width: 600px;
+  width: 98%;
   min-width: 600px;
-  margin: 0 auto;
+  margin: 10px;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;

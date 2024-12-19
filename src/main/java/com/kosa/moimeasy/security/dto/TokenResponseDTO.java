@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class TokenResponseDTO {
     private Long userId;
     private Long moeimId;
+    private String profileImage;
     private String name;
     private String email;
     private String nickname;

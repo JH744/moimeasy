@@ -20,14 +20,14 @@ public class ChatMessage extends BaseTimeEntity {
     @Column(nullable = false)
     private Long sender;
 
-    @Column(nullable = true) // 텍스트 메시지가 아닌 경우 null 가능
+    @Column(nullable = true, length = 2048) // 길이를 2048로 설정
     private String content;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageType messageType;
 
-    @Column(nullable = true)
+    @Column(name = "file_url", nullable = true, length = 2048)
     private String fileUrl; // 사진/영상 경로
 
     public enum MessageType {

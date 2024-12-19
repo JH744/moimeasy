@@ -10,19 +10,27 @@
         dataKey="boardId"
         filterDisplay="menu"
         sortMode="single"
-        :loading="loading"
         :globalFilterFields="['title', 'writerName', 'tag']"
       >
         <!-- 테이블 헤더 -->
         <template #header>
           <div class="filter-header">
-            <Button
-              type="button"
-              icon="pi pi-filter-slash"
-              label="Clear"
-              outlined
-              @click="clearFilter()"
-            />
+            <div class="filter-header-btn-box">
+              <Button
+                type="button"
+                icon="pi pi-filter-slash"
+                label="Clear"
+                outlined
+                @click="clearFilter()"
+              />
+              <Button
+                type="button"
+                icon="pi pi-pencil"
+                label="Post"
+                outlined
+                @click="router.push('/schedule/board-post')"
+              />
+            </div>
             <IconField>
               <InputIcon>
                 <i class="pi pi-search" />
@@ -62,7 +70,7 @@
           <template #body="{ data }">
             <div class="flex items-center gap-2">
               <img
-                :src="data.profileUrl || defaultProfileImage"
+                :src="data.profileImage || defaultProfileImage"
                 :alt="data.writerName"
                 class="profile-image"
                 style="width: 32px"
@@ -151,10 +159,14 @@ import MultiSelect from 'primevue/multiselect';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import { FilterMatchMode } from '@primevue/core/api';
-
+import { useLoadingStore } from '@/stores/useLoadingStore';
+import { fetchImageUrl } from '@/utils/image-load-utils';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const loadingStore = useLoadingStore();
 const boards = ref([]);
 const filters = ref();
-const loading = ref(true);
+
 // userList를 computed로 변경
 const userList = computed(() => {
   // 중복 제거 및 고유한 작성자 목록 생성
@@ -162,7 +174,7 @@ const userList = computed(() => {
     (name) => ({
       name: name,
       image:
-        boards.value.find((board) => board.writerName === name)?.profileUrl ||
+        boards.value.find((board) => board.writerName === name)?.profileImage ||
         defaultProfileImage,
     })
   );
@@ -218,22 +230,57 @@ const onWriterFilter = (event) => {
 
 // 게시판 데이터 가져오기
 const fetchBoards = async () => {
+  loadingStore.startLoading();
   try {
     const response = await axios.get('/api/v1/boards');
-    boards.value = response.data;
+    boards.value = await Promise.all(
+      response.data.map(async (board) => {
+        let profileImage = null;
+
+        // profileImage가 유효한 문자열인지 확인
+        if (
+          board.profileImage &&
+          typeof board.profileImage === 'string' &&
+          board.profileImage.trim() !== ''
+        ) {
+          try {
+            profileImage = await changeImageUrl(board.profileImage);
+          } catch (error) {
+            console.error('이미지 변환 실패:', error);
+            profileImage = defaultProfileImage;
+          }
+        } else {
+          profileImage = defaultProfileImage;
+          console.warn(
+            `profileImage이 유효하지 않음 => ${board.writerName}의 profileImage: `,
+            board.profileImage
+          );
+        }
+
+        return {
+          ...board,
+          profileImage: profileImage,
+        };
+      })
+    );
     // 데이터에서 고유한 태그 추출
     const uniqueTags = [...new Set(response.data.map((board) => board.tag))];
     tagOptions.value = uniqueTags;
   } catch (error) {
     console.error('Error fetching boards:', error);
   } finally {
-    loading.value = false;
+    loadingStore.stopLoading();
   }
 };
 
 // 필터 초기화 버튼
 const clearFilter = () => {
   initFilters();
+};
+
+/**  파이어베이스 스토리지의 url로 변환*/
+const changeImageUrl = async (imageUrl) => {
+  return await fetchImageUrl(imageUrl);
 };
 
 onMounted(() => {
@@ -280,4 +327,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
 } */
+
+.filter-header-btn-box {
+  display: flex;
+  gap: 10px;
+}
 </style>

@@ -36,4 +36,13 @@ public class ScheduleController {
     }
 
 
+    // 일정 부분 업데이트(PATCH)
+    @PatchMapping("/events/{id}")
+    public ResponseEntity<?> updatePartialEvent(
+            @PathVariable(name = "id") String eventCode,
+            @RequestBody ScheduleDTO partialUpdateDto) {
+        scheduleService.updatePartialEvent(eventCode, partialUpdateDto);
+        return ResponseEntity.ok("이벤트 업데이트 성공");
+    }
+
 }

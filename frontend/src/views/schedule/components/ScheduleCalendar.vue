@@ -113,14 +113,17 @@ import { useLoadingStore } from '@/stores/useLoadingStore';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
+import { useAuthStore } from '@/stores/auth';
+const auth = useAuthStore();
 const toast = useToast();
 const primeConfirm = useConfirm();
 
 const types = ref([
-  { name: '기본이벤트', type: 'custom-event1' },
-  { name: '공휴일이벤트 ', type: 'holiday-event' },
-  { name: '중요이벤트', type: 'important-event' },
-  { name: '일반이벤트', type: '' },
+  { name: '타입A', type: 'custom-event1' },
+  { name: '타입B ', type: 'holiday-event' },
+  { name: '타입C', type: 'important-event' },
+  { name: '타입D', type: '' },
+  { name: '타입E', type: 'custom-event2' },
 ]);
 // 스토어
 const loadingStore = useLoadingStore();
@@ -128,6 +131,7 @@ const loadingStore = useLoadingStore();
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
+import { fetchAddNotification } from '@/utils/notification-add-utils';
 
 // 구글 캘린더 API 설정
 const googleCalendarApiKey = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -220,7 +224,6 @@ async function handleDateSelect(selectInfo) {
         end: selectInfo.endStr,
         allDay: selectInfo.allDay,
         className: eventData.eventType, // 이벤트 타입 value = 클레스네임
-        // className: 'custom-event',
         extendedProps: {
           description: eventData.description || '',
           location: eventData.location || '미정',
@@ -280,7 +283,7 @@ function closeDialog() {
 }
 // 삭제 클릭 이벤트
 function handleEventClick(clickInfo) {
-  console.log('삭제 클릭 이벤트', clickInfo.event);
+  // console.log('삭제 클릭 이벤트', clickInfo.event);
   confirmPosition('top', clickInfo);
 }
 
@@ -292,8 +295,8 @@ function handleEvents(events) {
 /**서버에 일정 추가 */
 async function handleEventAdd(eventInfo) {
   const event = eventInfo.event; // 캘린더api에 방금 추가된 일정 데이터를 불러옴
-  console.log('이벤트 추가시 호출됨:', event);
-  console.log('이벤트 추가시 호출됨:', event.classNames[0]);
+  // console.log('이벤트 추가시 호출됨:', event);
+  // console.log('이벤트 추가시 호출됨:', event.classNames[0]);
   try {
     const response = await axios.post('/api/v1/events', {
       eventCode: event.id,
@@ -308,19 +311,27 @@ async function handleEventAdd(eventInfo) {
     });
     console.log('이벤트 추가 성공:', response.data);
     showSuccess();
+
+    // 알림 추가
+    fetchAddNotification(
+      'new 일정',
+      '우리 모임의 새 일정이 등록되었습니다.',
+      auth?.user?.moeimId
+    );
   } catch (error) {
     console.error('이벤트 추가 실패:', error);
   }
 }
 
 async function handleEventChange(eventInfo) {
+  // console.log('변경이벤트호출');
   const event = eventInfo.event;
   try {
-    const response = await axios.put(`/events/${event.id}`, {
-      title: event.title,
-      start: event.start,
-      end: event.end,
-      allDay: event.allDay,
+    const response = await axios.patch(`/api/v1/events/${event.id}`, {
+      scheduleTitle: event.title,
+      startTime: event.start,
+      endTime: event.end,
+      isAllDayEvent: event.allDay,
     });
     console.log('이벤트 변경 성공:', response.data);
   } catch (error) {
@@ -329,7 +340,7 @@ async function handleEventChange(eventInfo) {
 }
 
 async function handleEventRemove(eventInfo) {
-  console.log('삭제이벤트호출');
+  // console.log('삭제이벤트호출');
   const event = eventInfo.event;
   try {
     const response = await axios.delete(`/api/v1/events/${event.id}`);

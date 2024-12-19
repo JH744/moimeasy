@@ -29,21 +29,22 @@ public class SettlementService {
      */
     @Transactional
     public List<SettlementDTO> getAllRequests() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         return settlementRepository.findAll()
                 .stream()
                 .map(settlement -> {
+                    System.out.println("Mapping Settlement ID: " + settlement.getId());
                     SettlementDTO dto = new SettlementDTO();
                     dto.setTitle(settlement.getTitle());
-                    dto.setUserName(settlement.getUser().getUserName()); // 작성자 이름
+                    dto.setUserName(settlement.getUser() != null ? settlement.getUser().getUserName() : "알 수 없는 사용자");
                     dto.setImageUrl(settlement.getImageUrl());
                     dto.setAmount(settlement.getAmount());
-                    dto.setCreatedAt(settlement.getCreatedAt().format(formatter)); // 날짜를 문자열로 변환
+                    dto.setCreatedAt(settlement.getCreatedAt() != null ? settlement.getCreatedAt().toString() : "N/A");
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+
+
 
     /**
      * 정산 요청 생성

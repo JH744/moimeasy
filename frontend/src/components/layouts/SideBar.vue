@@ -59,45 +59,23 @@ import Notebook from '@/assets/icons/notebook.svg?url';
 import GraphIcon from '@/assets/icons/graphIcon.svg?url';
 import PanelMenu from 'primevue/panelmenu';
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth'; // Pinia auth 스토어
 import NavLogo from './NavLogo.vue';
 import ChatIcon from '@/assets/icons/chatIcon.svg?url';
-
-// Pinia auth 스토어 사용
-const authStore = useAuthStore();
+import albumIcon from '@/assets/icons/albumIcon.svg?url';
 
 //사이드바 메뉴구성 아이템
 const items = ref([
   {
     label: 'Dashboard',
     icon: OutlineIcon,
-    items: [
-      {
-        label: 'Dash-1',
-        icon: OutlineIcon,
-        route: '/theming/styled',
-      },
-      {
-        label: 'Dash-2',
-        icon: OutlineIcon,
-        route: '/theming/unstyled',
-      },
-      {
-        label: '로그아웃',
-        icon: OutlineIcon,
-        command: () => {
-          console.log('로그아웃 실행'); // 디버깅 로그
-          authStore.logout(); // Pinia auth 스토어의 logout 호출
-        },
-      },
-    ],
+    route: '/main',
   },
   {
     label: '회원관리',
     icon: UsersIcon,
     items: [
       {
-        label: '회원관리',
+        label: '회원조회',
         icon: UsersIcon,
         route: '/user-manage',
       },
@@ -171,6 +149,11 @@ const items = ref([
         url: '/chat-layout',
       },
     ],
+  },
+  {
+    label: '갤러리',
+    icon: albumIcon,
+    url: '/gallery',
   },
 ]);
 </script>
@@ -464,7 +447,7 @@ const items = ref([
   gap: 10px;
   border-radius: 8px;
   padding: 8px 8px 8px 24px;
-  width: 130px;
+  width: 135px;
   border: none;
   height: 53px;
   cursor: pointer;

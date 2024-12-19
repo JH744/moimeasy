@@ -52,6 +52,9 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import api from '@/axios';
 import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router';
+import { fetchAddNotification } from '@/utils/notification-add-utils';
+const router = useRouter();
 const toast = useToast();
 const auth = useAuthStore();
 // 게시글 데이터
@@ -77,10 +80,17 @@ const submitPost = async () => {
       `/api/v1/boards/${auth.user.userId}`,
       requestData
     );
+    // 알림 추가
+    fetchAddNotification(
+      'new 게시글',
+      '우리 모임의 새 게시물이 등록되었습니다.',
+      auth?.user?.moeimId
+    );
+
     console.log('API 응답:', response.data);
     toast.add({
       severity: 'info',
-      summary: '삭제 완료',
+      summary: '게시글 등록 완료',
       detail: '게시글이 성공적으로 작성되었습니다.',
       life: 3000,
     });
@@ -95,10 +105,12 @@ const submitPost = async () => {
     console.error('게시글 작성 실패:', error);
     toast.add({
       severity: 'error',
-      summary: '작성 실패',
+      summary: '게시글 등록 실패',
       detail: '게시글 작성 중 오류가 발생했습니다.',
       life: 3000,
     });
+  } finally {
+    await router.push('/schedule/board');
   }
 };
 </script>
