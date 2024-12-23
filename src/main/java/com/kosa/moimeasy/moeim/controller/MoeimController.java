@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/moeim")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -34,8 +37,8 @@ public class MoeimController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<String> joinMoeim(@RequestBody MoeimDTO request,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> joinMoeim(@RequestBody MoeimDTO request,
+                                       @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -44,10 +47,15 @@ public class MoeimController {
         request.setUserId(userId);
 
         try {
-            moeimService.joinMoeim(request);
-            return ResponseEntity.ok("모임 가입이 완료되었습니다.");
+            Long moeimId = moeimService.joinMoeim(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "모임 가입이 완료되었습니다.");
+            response.put("moeimId", moeimId);
+
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }

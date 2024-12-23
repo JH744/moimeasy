@@ -3,6 +3,7 @@ package com.kosa.moimeasy.user.controller;
 import com.kosa.moimeasy.security.dto.TokenResponseDTO;
 import com.kosa.moimeasy.security.provider.JwtTokenProvider;
 import com.kosa.moimeasy.user.dto.LoginDTO;
+import com.kosa.moimeasy.user.exception.LoginException;
 import com.kosa.moimeasy.user.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -42,7 +43,7 @@ public class LoginController {
                     .secure(false) // 개발 환경에서는 false, 배포 시 true
                     .path("/api/v1/refresh-token")
                     .maxAge(tokenProvider.getRefreshTokenExpiration() / 1000)
-                    .sameSite("Strict")
+                    .sameSite("None") // <-- "Strict" 대신 "None"
                     .build();
             response.addHeader("Set-Cookie", refreshCookie.toString());
 
@@ -59,10 +60,14 @@ public class LoginController {
                     .build();
 
             return ResponseEntity.ok(responseBody);
+        } catch (LoginException e) {
+            // 백엔드에서 던진 커스텀 예외(LoginException)라면, 그 메시지를 그대로 내려줌
+            log.error("로그인 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (Exception e) {
-            log.error("로그인 실패: ", e); //예외의 스택 트레이스를 함께 로그에 남김
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인에 실패했습니다.");
-
+            // 그 외 예외
+            log.error("로그인 실패: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 중 오류가 발생했습니다.");
         }
     }
     @PostMapping("/logout")
@@ -92,7 +97,7 @@ public class LoginController {
                     .secure(false) // HTTPS 환경에서는 true로 변경
                     .path("/api/v1/refresh-token")
                     .maxAge(0)// 즉시 만료
-                    .sameSite("None") // None으로 설정하여 모든 요청에 쿠키 포함  수정 전 :Strict
+                    .sameSite("Strict") // None으로 설정하여 모든 요청에 쿠키 포함  수정 전 :Strict
                     .build();
             response.addHeader("Set-Cookie", deleteCookie.toString());
 

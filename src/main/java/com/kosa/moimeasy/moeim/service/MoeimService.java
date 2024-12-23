@@ -55,35 +55,38 @@ public class MoeimService {
         return savedMoeim;
     }
 
-    public void joinMoeim(MoeimDTO request) {
-        // 1. 사용자 조회
+    public Long joinMoeim(MoeimDTO request) {
+        // 사용자 조회
         User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 2. 초대 이메일 검증
+        // 초대 이메일 검증
         Invitation invitation = invitationRepository.findFirstByEmailOrderByCreatedAtDesc(user.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("초대된 이메일이 아닙니다."));
+                .orElseThrow(() -> new IllegalArgumentException("초대된 이메일이 아닙니다."));
 
-        // 3. 초대된 모임 ID로 모임 조회
+        // 초대된 모임 ID로 모임 조회
         Moeim moeim = moeimRepository.findById(invitation.getMoeimId())
-            .orElseThrow(() -> new IllegalArgumentException("초대받은 모임이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("초대받은 모임이 존재하지 않습니다."));
 
-        // 4. 모임 코드 검증
+        // 모임 코드 검증
         if (!moeim.getMoeimCode().equals(request.getMoeimCode())) {
             throw new IllegalArgumentException("입력된 모임 코드가 초대받은 모임 코드와 일치하지 않습니다.");
         }
 
-        // 5. 사용자 모임 ID 및 역할 업데이트
-        Role memberRole = roleRepository.findById(2L) // 멤버 역할 ID를 설정
-            .orElseThrow(() -> new IllegalArgumentException("멤버 역할을 찾을 수 없습니다."));
+        // 사용자 모임 ID 및 역할 업데이트
+        Role memberRole = roleRepository.findById(2L)
+                .orElseThrow(() -> new IllegalArgumentException("멤버 역할을 찾을 수 없습니다."));
         user.setMoeimId(moeim.getMoeimId());
         user.setRole(memberRole);
         userRepository.save(user);
 
-        // 6. 초대 상태를 COMPLETED로 업데이트
+        // 초대 상태를 COMPLETED로 업데이트
         invitation.setStatus(Invitation.InvitationStatus.COMPLETED);
         invitationRepository.save(invitation);
+
+        return moeim.getMoeimId(); // 반환
     }
+
 
     // 가상 계좌 번호 생성 메서드
     private String generateVirtualAccountNumber() {
@@ -104,6 +107,7 @@ public class MoeimService {
         }
         return moeimCode.toString();
     }
+
 
     
 }

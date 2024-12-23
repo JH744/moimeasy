@@ -1,5 +1,8 @@
 <template>
   <div class="login-container">
+    <Toast />
+    <ConfirmDialog></ConfirmDialog>
+    <h1 class="title2">MoeimEasy</h1>
     <h2 class="title">로그인</h2>
     <form @submit.prevent="handleLogin">
       <div class="form-group">
@@ -21,11 +24,11 @@
         />
       </div>
       <div class="form-options">
-    <div>
-      <a href="#" class="forgot-password" @click.prevent="goToFindEmail"
-          >아이디 찾기</a
-        >
-    </div>
+        <div>
+          <a href="#" class="forgot-password" @click.prevent="goToFindEmail"
+            >아이디 찾기</a
+          >
+        </div>
         <a href="#" class="forgot-password" @click.prevent="goToFindPassword"
           >비밀번호 초기화</a
         >
@@ -39,6 +42,7 @@
 
 <script>
 import { useAuthStore } from '@/stores/auth';
+import { useToast } from 'primevue/usetoast'; // Toast 사용
 
 export default {
   name: 'login',
@@ -53,17 +57,27 @@ export default {
   },
   setup() {
     const authStore = useAuthStore();
-    return { authStore };
+    const toast = useToast(); // Toast 인스턴스
+    return { authStore, toast };
   },
   methods: {
     async handleLogin() {
-      // 로그인 처리 코드
+      // 프론트단에서 간단한 유효성 검증
       if (this.form.email.trim() === '' || this.form.password.trim() === '') {
         alert('모든 필드를 채워주세요.');
         return;
       }
       try {
+         // Auth Store의 login() 으로 백엔드 /login API 호출
         await this.authStore.login(this.form.email, this.form.password);
+
+        // 로그인 성공 시 Toast 알림
+        this.toast.add({
+          severity: 'success',
+          summary: '로그인 성공',
+          detail: '로그인을 성공하셨습니다.',
+          life: 3000,
+        });
         console.log('로그인 성공'); // 로그인 성공 시 필요한 로직 추가 가능
 
         // 로그인 후 moiemId 확인
@@ -75,7 +89,32 @@ export default {
           this.$router.push('/main');
         }
       } catch (error) {
-        this.errorMessage = error.message;
+        // ----- 여기서 백엔드로부터 받은 에러 메시지를 확인 -----
+        // 일반적으로 error.response.data 에 문자열이 들어있다고 가정
+        let detailMessage = '로그인을 실패했습니다.';
+
+        if (error.response && error.response.data) {
+          const serverMessage = error.response.data; 
+          // 백엔드에서 body(e.getMessage())로 문자열만 넘기므로, 그대로 사용
+          if (serverMessage === '가입되지 않은 아이디입니다.') {
+            detailMessage = '가입되지 않은 아이디입니다.';
+          } else if (serverMessage === '비밀번호가 일치하지 않습니다.') {
+            detailMessage = '비밀번호가 일치하지 않습니다.';
+          } else {
+            // 그 외 메시지라면 그대로 노출
+            detailMessage = serverMessage;
+          }
+        }
+
+        // Toast로 에러 출력
+        this.toast.add({
+          severity: 'error',
+          summary: '로그인 실패',
+          detail: detailMessage,
+          life: 3000,
+        });
+        // 화면에 표시할 수 있도록 data 속성에 저장 (옵션)
+        this.errorMessage = detailMessage;
       }
     },
     resetForm() {
@@ -89,8 +128,8 @@ export default {
       this.$router.push('/main');
     },
     goToFindEmail() {
-    console.log('아이디 찾기 클릭'); // 로그로 이벤트 확인
-    this.$router.push('/find-email'); // FindEmailView로 이동
+      console.log('아이디 찾기 클릭'); // 로그로 이벤트 확인
+      this.$router.push('/find-email'); // FindEmailView로 이동
     },
     goToFindPassword() {
       console.log('비밀번호 초기화 클릭'); // 로그로 이벤트 확인
@@ -115,6 +154,13 @@ export default {
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.title2 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #7f56d9;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 .title {
@@ -193,5 +239,14 @@ input {
 
 .btn-secondary:hover {
   background-color: #f7f5fc;
+}
+.status-pending {
+  color: orange;
+}
+.status-accepted {
+  color: green;
+}
+.status-rejected {
+  color: red;
 }
 </style>

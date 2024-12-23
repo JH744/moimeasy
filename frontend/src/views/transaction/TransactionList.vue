@@ -1,6 +1,6 @@
 <template>
   <div class="total-frame">
-    <PayMenuList /> <!-- 메뉴 위치 -->
+    <!-- <PayMenuList /> 메뉴 위치 -->
     <div class="title-bar datatable-aligned">
       <div class="title">{{ currentMonth }}</div>
       <div class="icon-button-group">

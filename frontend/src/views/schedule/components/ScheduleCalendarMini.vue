@@ -1,5 +1,5 @@
 <template>
-  <Toast position="top-right" />
+  <Toast position="bottom-right" />
   <ConfirmDialog group="positioned" :modal="false"></ConfirmDialog>
   <Dialog
     v-model:visible="visible"
@@ -53,17 +53,6 @@
           >장소</label
         >
       </FloatLabel>
-      <!-- <FloatLabel variant="on">
-        <InputText
-          id="eventAttendants"
-          class="add-dialog-input"
-          autocomplete="off"
-          v-model="newEventAttendants"
-        />
-        <label for="eventAttendants" class="add-dialog-inputbox-label"
-          >참석자</label
-        >
-      </FloatLabel> -->
     </div>
     <template #footer>
       <Button
@@ -101,7 +90,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
-import '@/views/schedule/components/ScheduleCalendar.style.css';
+import '@/views/schedule/components/ScheduleCalendarMini.style.css';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -162,9 +151,9 @@ const calendarOptions = reactive({
     googleCalendarPlugin,
   ],
   headerToolbar: {
-    left: 'today', // 추후 myCustomButton버튼 추가
+    left: '', // 추후 myCustomButton버튼 추가
     center: 'prev title next',
-    right: 'timeGridDay,timeGridWeek,dayGridMonth',
+    right: '',
   },
   buttonText: {
     today: 'Today',

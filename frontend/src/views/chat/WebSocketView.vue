@@ -24,7 +24,7 @@ let stompClient;
 
 const connectWebSocket = () => {
   // Spring Boot의 WebSocket 엔드포인트로 연결 설정
-  const socket = new SockJS('http://localhost:8088/ws-connect');
+  const socket = new SockJS('http://192.168.5.49:8088/ws-connect');
   stompClient = Stomp.over(socket);
   stompClient.debug = (str) => {
     console.log('STOMP debug: ', str); // 디버깅용 로그

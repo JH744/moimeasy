@@ -1,16 +1,17 @@
 <template>
   <div class="total-frame">
-    <PayMenuList /> <!-- 메뉴 위치 -->
+    <!-- 상단: 타이틀, 버튼 그룹, 아이콘 그룹 -->
     <div class="title-bar">
+      <!-- 왼쪽: 현재 월 -->
       <div class="title">{{ currentMonth }}</div>
+
+      <!-- 가운데: 아이콘 그룹 -->
       <div class="icon-button-group">
         <i class="pi pi-caret-left" style="font-size: 1rem" @click="updateMonth(-1)"></i>
         <i class="pi pi-calendar-times" style="font-size: 1rem"></i>
         <i class="pi pi-caret-right" style="font-size: 1rem" @click="updateMonth(1)"></i>
       </div>
       <Button label="회비 납부" icon="pi pi-check" iconPos="right" rounded class="pay-button" @click="visible1 = true" />
-    </div>
-    <div>
       <Button label="계좌 입금" icon="pi pi-paypal" iconPos="right" rounded class="pay-button" @click="visible4 = true" />
     </div>
   </div>
@@ -38,11 +39,11 @@
   </Dialog>
 
   <!-- 확인 모달 -->
-  <Dialog v-model:visible="visible5" modal :style="{ width: '30rem', height: '25rem' }">
+  <Dialog v-model:visible="visible5" modal :style="{ width: '32rem', height: '25rem' }">
     <template #header>
       <div style="text-align: center; font-size: 1.2em; margin-top: 30px; color: black;">
-        <span style="font-weight: bold; color:purple;">{{ userAccount }}</span> 계좌에
-        <span style="font-weight: bold; color:purple;">{{ value }}</span>원 입금하시겠습니까?
+        <span style="font-weight: bold; color:blue;">{{ userAccount }}</span> 계좌에
+        <span style="font-weight: bold; color:blue;">{{ value }}</span>원 입금하시겠습니까?
         <p>입금계좌 : {{ userBank }}({{ username }}) {{ userAccount }}</p>
       </div>
     </template>
@@ -53,7 +54,7 @@
   </Dialog>
 
   <!-- 결과 모달 -->
-  <Dialog v-model:visible="visible6" modal :style="{ width: '27rem', height: '40rem' }" :closable="false">
+  <Dialog v-model:visible="visible6" modal :style="{ width: '27rem', height: '30rem' }" :closable="false">
     <template #header>
       <div
         style="display: flex; justify-content: center; align-items: center; font-size: 4em; margin-top: 50px; font-weight: bold; color: #7f56d9;">
@@ -63,7 +64,10 @@
     </template>
 
     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
-      <p>{{ username }} 님의 {{ userAccount }} 계좌에 {{ value }} 원을 입금하였습니다.</p>
+      <p style="margin-bottom: 50px;"><span style="font-weight: bold; color: blue;">{{ username }}</span> 님의 <span
+          style="font-weight: bold; color: blue;">{{ userAccount }} </span> 계좌에<br>
+        <span style="font-weight: bold; color: blue;">{{ value }} </span>원을 입금하였습니다.
+      </p>
       <Button label="닫기" rounded @click="visible6 = false" />
     </div>
   </Dialog>
@@ -98,6 +102,7 @@
         <p>출금계좌 : {{ userBank }}({{ username }}) {{ userAccount }}</p>
         <p>입금계좌 : {{ moeimBank }}({{ moeimName }}) {{ moeimAccount }}</p>
       </div>
+      <ConfirmDialog></ConfirmDialog>
     </template>
     <div class="button-group">
       <Button label="확인" rounded class="next-button" @click="confirmremittance" />
@@ -106,17 +111,20 @@
   </Dialog>
 
   <!-- 결과 모달 -->
-  <Dialog v-model:visible="visible3" modal :style="{ width: '27rem', height: '40rem' }" :closable="false">
+  <Dialog v-model:visible="visible3" modal :style="{ width: '27rem', height: '30rem' }" :closable="false">
     <template #header>
-      <div
-        style="display: flex; justify-content: center; align-items: center; font-size: 4em; margin-top: 50px; font-weight: bold; color: #7f56d9;">
+      <div style="display: flex; justify-content: center; align-items: center; font-size: 4em; margin-top: 50px; font-weight: bold; color: #7f56d9;
+        margin-bottom: 30px">
         <i class="pi pi-check-circle" style="font-size: 8rem; margin-right: 20px;"></i>
-        <div style="margin-top: 30px;">입금</div>
+        <div style="margin-top: 30px; margin-bottom: 30px">입금</div>
       </div>
     </template>
-
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
-      <p>{{ username }} 님의 계좌에서 {{ moeimName }} 계좌에 {{ value }} 원을 입금하였습니다.</p>
+    <div
+      style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; margin:auto">
+      <p style="margin-bottom: 50px;"><span style="font-weight: bold; color: blue;">{{ username }}</span> 님의 계좌에서
+        <span style="font-weight: bold; color: blue;"> {{ moeimName }} </span> 계좌에<br>
+        <span style="font-weight: bold; color: blue;">{{ value }} </span>원을 입금하였습니다.
+      </p>
       <Button label="닫기" rounded @click="visible3 = false" />
     </div>
   </Dialog>
@@ -127,13 +135,11 @@
         <!-- 번호 -->
         <Column field="number" header="번호" style="width: 12%" />
 
-        <!-- 사진 -->
-        <Column header="사진" style="width: 12%">
+        <!-- <Column header="회원사진" style="width: 12%">
           <template #body="slotProps">
-            <img :src="slotProps.data.photo ? `/assets/${slotProps.data.photo}` : '/assets/default-photo.png'" alt="사진"
-              style="width: 40px; height: 40px; border-radius: 50%" />
+            <img :src="slotProps.data.photo" alt="사진" style="width: 40px; height: 40px; border-radius: 50%;" />
           </template>
-        </Column>
+  </Column> -->
 
         <!-- 이름 -->
         <Column field="userName" header="이름" style="width: 12%" />
@@ -170,6 +176,12 @@ import InputText from 'primevue/inputtext';
 import axios from "axios";
 import { useRouter } from 'vue-router';
 import { useLoadingStore } from '@/stores/useLoadingStore';
+import { useConfirm } from "primevue/useconfirm";
+import { useToast } from "primevue/usetoast";
+import { fetchImageUrl } from "@/utils/image-load-utils";
+
+const confirm = useConfirm();
+const toast = useToast();
 
 const router = useRouter();
 const loadingStore = useLoadingStore();
@@ -201,6 +213,7 @@ const accessToken = localStorage.getItem('accessToken');
 const userRaw = localStorage.getItem('user');
 let moeimId = null;
 let userId = null;
+let photo = null;
 
 if (userRaw) {
   const user = JSON.parse(userRaw); // JSON 파싱
@@ -361,10 +374,12 @@ async function confirmremittance() {
     visible3.value = true; // 결과 모달 열기
   } catch (error) {
     console.error("송금 중 오류 발생:", error.response?.data || error.message);
+    confirm1(error.response?.data || error.message);
   } finally {
     loadingStore.stopLoading(); // 로딩 중지
   }
 }
+
 
 // 확인 버튼 클릭 -> 입금 처리
 async function confirmDeposit() {
@@ -470,38 +485,55 @@ function resetValue() {
   visible5.value = false;
 }
 
+const confirm1 = (message) => {
+  confirm.require({
+    message: message || '회비를 이미 납부하였습니다.',
+    header: 'Confirmation',
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: {
+      label: '취소',
+      severity: 'secondary',
+      outlined: true
+    },
+    acceptProps: {
+      label: '확인'
+    },
+    accept: () => {
+      visible2.value = false;
+    },
+    reject: () => {
+      toast.add({ severity: 'error', summary: '이체취소', detail: '이체가 취소되었습니다.', life: 3000 });
+      visible2.value = false;
+    }
+  });
+};
+
 </script>
 
 <style scoped>
 .total-frame {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: flex-start;
   padding: 1rem;
   margin: 10px;
+  width: 100%;
 }
 
 .title-bar {
   display: flex;
-  /* Flexbox 사용 */
-  justify-content: space-between;
-  /* 양쪽 정렬 */
   align-items: center;
-  /* 세로 가운데 정렬 */
-  margin-bottom: 1rem;
-  /* 아래쪽 여백 */
-  width: 100%;
-  /* 부모의 전체 폭 사용 */
+  width: 90%;
+}
+
+.title {
+  font-size: 2em;
+  font-weight: bold;
+  flex: 1;
 }
 
 .icon-button-group {
   display: flex;
-  /* 아이콘과 버튼을 가로로 배치 */
-  align-items: center;
-  /* 세로 가운데 정렬 */
-  gap: 20px;
-  /* 아이콘과 버튼 사이 여백 */
+  margin-right: 50px;
+  gap: 30px;
 }
 
 .number-buttons {
@@ -554,6 +586,7 @@ function resetValue() {
 }
 
 .title {
+  justify-content: center;
   font-size: 1.5rem;
   font-weight: bold;
 }

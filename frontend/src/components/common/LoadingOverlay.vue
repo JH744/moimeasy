@@ -1,12 +1,6 @@
 <template>
-  <Loading
-    :active="loadingStore.isLoading"
-    :loader="spinner"
-    background="rgba(255,255,255,0.8)"
-    :color="spinnerColor"
-    width="140"
-    height="140"
-  />
+  <Loading :active="loadingStore.isLoading" :loader="spinner" background="rgba(255,255,255,0.8)" :color="spinnerColor"
+    :width="140" :height="140" />
 </template>
 
 <script setup>

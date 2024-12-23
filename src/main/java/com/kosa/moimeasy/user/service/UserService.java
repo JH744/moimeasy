@@ -4,7 +4,9 @@ import com.kosa.moimeasy.user.dto.UserDTO;
 import com.kosa.moimeasy.user.entity.Role;
 import com.kosa.moimeasy.user.entity.User;
 import com.kosa.moimeasy.user.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +14,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<User> findAllUsers() {
         return userRepository.findAll();
@@ -42,6 +48,54 @@ public class UserService {
     }
 
     public User updateUser(Long userId, UserDTO request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 현재 비밀번호 확인
+        if (request.getCurrentPassword() == null || request.getCurrentPassword().isEmpty()) {
+            log.info("현재 비밀번호가 제공되지 않았습니다.");
+            throw new IllegalArgumentException("현재 비밀번호를 입력해주세요.");
+        }
+
+        boolean isPasswordValid = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
+        if (!isPasswordValid) {
+            log.info("현재 비밀번호가 일치하지 않습니다.");
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+
+        // Role은 변경하지 않음
+        if (request.getUserName() != null) {
+            user.setUserName(request.getUserName());
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getProfileImage() != null) {
+            user.setProfileImage(request.getProfileImage());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPhone() != null && !request.getPhone().matches("^\\d{10,11}$")) {
+            throw new IllegalArgumentException("전화번호 형식이 잘못되었습니다.");
+        }
+        if (request.getNickname() != null && !request.getNickname().trim().isEmpty()) {
+            user.setNickname(request.getNickname());
+        } else if (request.getNickname() != null) {
+            throw new IllegalArgumentException("닉네임은 비어 있을 수 없습니다.");
+        }
+        if (request.getMoeimId() != null) {
+            user.setMoeimId(request.getMoeimId());
+        }
+
+        return userRepository.save(user);
+    }
+
+
+
+
+    public User updateUserProfileImage(Long userId, UserDTO request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -92,5 +146,6 @@ public class UserService {
                         .build())
                 .collect(Collectors.toList());
     }
+
 
 }

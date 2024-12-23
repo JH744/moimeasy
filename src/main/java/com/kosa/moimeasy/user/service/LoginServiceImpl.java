@@ -14,6 +14,7 @@ import com.kosa.moimeasy.security.provider.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import org.springframework.security.core.Authentication;
@@ -67,17 +68,21 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public TokenResponseDTO authenticate(LoginDTO loginDTO) throws LoginException {
         try {
-            // 인증 시도
-            Authentication authentication = authenticationManager.authenticate(
+            // DB에서 이메일 존재 여부 먼저 확인
+            User user = memberRepository.findByEmail(loginDTO.getEmail())
+                    .orElseThrow(() -> new LoginException("가입되지 않은 아이디입니다."));
+            // ↑ 여기서 이미 아이디가 존재하지 않으면 LoginException 발생
+
+            // 비밀번호 인증 시도
+            authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getEmail(),
                             loginDTO.getPassword()
                     )
             );
+            // ↑ 비밀번호가 틀린 경우 Spring Security 내부에서 BadCredentialsException 발생
 
-            // 인증 성공 후 사용자 정보 조회
-            User user = memberRepository.findByEmail(loginDTO.getEmail())
-                    .orElseThrow(() -> new LoginException("사용자를 찾을 수 없습니다."));
+            // 여기까지 도달했다면 인증 성공
 
             // Access Token 및 Refresh Token 생성
             String accessToken = tokenProvider.generateAccessToken(user.getUserId(), user.getRole().getRoleName());
@@ -105,6 +110,14 @@ public class LoginServiceImpl implements LoginService {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
+        } catch (BadCredentialsException ex) {
+            // Spring Security 인증 시 비밀번호가 틀리면 발생
+            log.error("로그인 실패(비밀번호 불일치): ", ex);
+            throw new LoginException("비밀번호가 일치하지 않습니다.", ex);
+        } catch (LoginException ex) {
+            // 아이디가 존재하지 않는 경우 or 우리가 직접 던진 예외
+            log.error("로그인 실패(아이디 존재x): ", ex);
+            throw ex; // 메시지 "아이디가 일치하지 않습니다." 그대로 던짐
         } catch (Exception ex) {
             log.error("로그인 실패: ", ex);
             throw new LoginException("로그인에 실패했습니다.", ex);

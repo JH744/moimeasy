@@ -23,6 +23,7 @@ public enum ErrorCode {
     ACCOUNT_NOT_EMPTY("계좌에 잔액이 남아있습니다."),
     BALANCE_NOT_ENOUGH("계좌의 잔액이 부족합니다."),
     TRANSACTION_TYPE_NOT_FOUND("거래 종류를 확인할 수 없습니다."),
+    USER_ALREADY_PAID("이미 회비를 납부했습니다."),
 
     INVALID_DATE("유효한 날짜인지 확인해주세요."),
     INVALID_DATE_RANGE("거래 내역은 최대 일주일까지 조회할 수 있습니다."),

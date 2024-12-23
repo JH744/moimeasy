@@ -32,6 +32,7 @@
 <script>
 import axios from 'axios';
 import Modal from '@/components/Modal.vue';
+import { useAuthStore } from '@/stores/auth';
 
 axios.defaults.baseURL = 'http://l19:8088';
 axios.defaults.withCredentials = true;
@@ -50,7 +51,8 @@ export default {
   methods: {
     async joinMoeim() {
       try {
-        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
+        const authStore = useAuthStore();
+        const token = authStore.accessToken;
         const payload = { moeimCode: this.formData.moeimCode };
 
         const response = await axios.post('/api/v1/moeim/join', payload, {
@@ -60,7 +62,16 @@ export default {
           },
         });
 
-        this.modalMessage = response.data || '모임 가입이 완료되었습니다.';
+        const { moeimId, message } = response.data;
+
+        if (!moeimId) {
+          throw new Error('서버 응답에 moeimId가 없습니다.');
+        }
+
+        authStore.user.moeimId = moeimId;
+        localStorage.setItem('user', JSON.stringify(authStore.user));
+
+        this.modalMessage = message;
         this.isModalVisible = true;
         this.isSuccess = true;
       } catch (error) {

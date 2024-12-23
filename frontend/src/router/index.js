@@ -14,11 +14,11 @@ import WebSocket from '@/views/chat/WebSocketView.vue';
 import TransactionList from '@/views/transaction/TransactionList.vue';
 import Category from '@/views/transaction/Category.vue';
 import ChatRoomList from '@/views/chat/ChatRoomListView.vue';
-import ChatView from '@/views/chat/ChatView.vue';
 import FindEmailView from '@/views/find/FindEmailView.vue';
 import FindUserInfoView from '@/views/find/FindUserInfoView.vue';
 import ResetPasswordView from '@/views/find/ResetPasswordView.vue';
-
+import EditProfileView from '@/views/user/EditProfileView.vue';
+import Error404View from '@/views/error/Error404View.vue';
 import Settlement from '@/views/moeim/SettlementView.vue';
 // 다른 뷰를 추가로 임포트
 
@@ -46,6 +46,12 @@ const routes = [
     name: '회원프로필',
     component: UserProfile,
   },
+  {
+    path: '/edit-profile/:userId',
+    name: '회원정보수정',
+    component: EditProfileView, // EditProfileView 추가
+    props: true, // userId를 props로 전달
+  },
   { path: '/invite-user', name: '회원초대', component: InviteUser },
   {
     path: '/invitation-list',
@@ -53,17 +59,23 @@ const routes = [
     component: InvitationList,
   },
   {
-    path: '/remittance-list',
-    name: 'RemittanceList',
-    component: RemittanceList,
+    path: '/transaction',
+    name: '회비',
+    children: [
+      {
+        path: '/remittance-list',
+        name: '회비납부',
+        component: RemittanceList,
+      },
+      {
+        path: '/transaction-list',
+        name: '거래내역',
+        component: TransactionList,
+      },
+    ],
   },
+  { path: '/category', name: '카테고리별 소비내역', component: Category },
   { path: '/chat', name: 'WebSocket', component: WebSocket },
-  {
-    path: '/transaction-list',
-    name: 'TransactionList',
-    component: TransactionList,
-  },
-  { path: '/category', name: 'Category', component: Category },
   { path: '/chat-room-list', name: '채팅목록', component: ChatRoomList },
   {
     path: '/chat/:roomId',
@@ -102,11 +114,6 @@ const routes = [
         component: () => import('@/views/board/BoardDetailView.vue'),
         props: true,
       },
-      {
-        path: 'chte',
-        name: '채팅',
-        component: () => import('@/views/schedule/components/ChTe.vue'),
-      },
     ],
   },
   {
@@ -128,7 +135,7 @@ const routes = [
   },
   {
     path: '/:catchAll(.*)',
-    component: () => import('@/views/error/Error404.vue'),
+    component: () => import('@/views/error/Error404View.vue'),
   },
   {
     path: '/chat-layout',

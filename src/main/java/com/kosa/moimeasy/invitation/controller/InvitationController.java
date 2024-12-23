@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/invitations")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://192.168.5.49:3000")
 public class InvitationController {
 
     @Autowired
@@ -40,7 +40,6 @@ public class InvitationController {
                 "moeimCode", moeimCode
         ));
     }
-
 
     @GetMapping
     public ResponseEntity<List<Invitation>> getInvitations(@AuthenticationPrincipal UserDetails userDetails) {

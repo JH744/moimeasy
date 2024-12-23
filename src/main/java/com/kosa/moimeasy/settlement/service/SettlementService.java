@@ -32,17 +32,19 @@ public class SettlementService {
         return settlementRepository.findAll()
                 .stream()
                 .map(settlement -> {
-                    System.out.println("Mapping Settlement ID: " + settlement.getId());
                     SettlementDTO dto = new SettlementDTO();
+                    dto.setId(settlement.getId()); // ID 추가
                     dto.setTitle(settlement.getTitle());
                     dto.setUserName(settlement.getUser() != null ? settlement.getUser().getUserName() : "알 수 없는 사용자");
                     dto.setImageUrl(settlement.getImageUrl());
                     dto.setAmount(settlement.getAmount());
                     dto.setCreatedAt(settlement.getCreatedAt() != null ? settlement.getCreatedAt().toString() : "N/A");
+                    dto.setStatus(settlement.getStatus().name());
                     return dto;
                 })
                 .collect(Collectors.toList());
     }
+
 
 
 

@@ -73,5 +73,29 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+    async joinMoeim(moeimCode) {
+      try {
+        const response = await api.post(
+          '/api/v1/moeim/join',
+          { moeimCode },
+          {
+            headers: {
+              Authorization: `Bearer ${this.accessToken}`,
+            },
+          }
+        );
+
+        // 사용자 정보 업데이트
+        this.user.moeimId = response.data.moeimId; // 서버에서 반환된 moeimId
+        localStorage.setItem('user', JSON.stringify(this.user));
+        alert('모임에 성공적으로 가입되었습니다.');
+        router.push('/main');
+      } catch (error) {
+        console.error('모임 가입 실패:', error.response || error.message);
+        throw new Error(
+          error.response?.data?.message || '모임 가입에 실패했습니다.'
+        );
+      }
+    },
   },
 });

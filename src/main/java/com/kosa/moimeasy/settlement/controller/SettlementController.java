@@ -62,19 +62,30 @@ public class SettlementController {
      * 정산 요청 승인
      */
     @PostMapping("/approve/{requestId}")
-    public ResponseEntity<?> approveRequest(@PathVariable Long requestId,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> approveRequest(
+            @PathVariable Long requestId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("관리자 인증이 필요합니다.");
         }
 
-        // 관리자인지 검증 (role_name이 "admin"인지 확인)
-        if (!userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
+        try {
+            Long userId = Long.valueOf(userDetails.getUsername()); // userId를 String에서 Long으로 변환
+            System.out.println("Received userId: " + userId);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않은 사용자 ID입니다.");
+        }
+
+        if (!userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("admin"))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("관리자 권한이 필요합니다.");
         }
 
         settlementService.approveRequest(requestId);
         return ResponseEntity.ok("정산 요청이 승인되었습니다.");
     }
+
+
 
 }

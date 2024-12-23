@@ -41,6 +41,31 @@
           />
         </template>
       </Column>
+      <Column field="status" header="상태">
+        <template #body="slotProps">
+          <span
+            :class="
+              'status-' +
+              (slotProps.data.status
+                ? slotProps.data.status.toLowerCase()
+                : 'pending')
+            "
+          >
+            {{ getStatusLabel(slotProps.data.status) }}
+          </span>
+        </template>
+      </Column>
+      <Column v-if="isAdmin" header="승인">
+        <template #body="slotProps">
+          <Button
+            v-if="slotProps.data.status === 'PENDING'"
+            label="승인"
+            icon="pi pi-check"
+            class="p-button-success"
+            @click="approveRequest(slotProps.data.id)"
+          />
+        </template>
+      </Column>
     </DataTable>
 
     <!-- 정산 요청 모달 -->
@@ -163,6 +188,41 @@ export default {
     const selectedFile = ref(null); // 선택된 파일
     const isSubmitDisabled = ref(true);
     const authStore = useAuthStore();
+    const isAdmin = ref(authStore.user?.roleId === 1);
+
+    // 요청 상태에 따른 라벨 반환
+    const getStatusLabel = (status) => {
+      switch (status) {
+        case 'PENDING':
+          return '대기 중';
+        case 'ACCEPTED':
+          return '승인됨';
+        case 'REJECTED':
+          return '거부됨';
+        default:
+          return '알 수 없음';
+      }
+    };
+
+    // 승인 요청 처리
+    const approveRequest = async (requestId) => {
+      if (!requestId) {
+        console.error('Invalid requestId:', requestId); // 로그 추가
+        alert('요청 ID가 유효하지 않습니다.');
+        return;
+      }
+
+      try {
+        await axios.post(`/api/v1/settlements/approve/${requestId}`, null, {
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
+        });
+        alert('정산 요청이 승인되었습니다.');
+        await fetchRequests();
+      } catch (error) {
+        console.error('Error approving request:', error);
+        alert('정산 요청 승인 중 오류가 발생했습니다.');
+      }
+    };
 
     // 날짜 포맷 함수
     const formatDate = (dateString) => {
@@ -277,6 +337,10 @@ export default {
       openDetailModal,
       closeDetailModal,
       formatDate,
+      isAdmin,
+      getStatusLabel,
+      fetchRequests,
+      approveRequest,
     };
   },
 };
@@ -356,5 +420,14 @@ label {
 
 .p-button-primary:hover {
   background-color: #6b49c1;
+}
+.status-pending {
+  color: orange;
+}
+.status-accepted {
+  color: green;
+}
+.status-rejected {
+  color: red;
 }
 </style>

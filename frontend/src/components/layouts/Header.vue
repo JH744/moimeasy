@@ -2,6 +2,7 @@
   <div class="header-wrapper">
     <div class="header-box">
       <div class="header-box1">
+        <!-- 브레드크럼 영역 -->
         <div class="card breadcrumb-wrapper">
           <Breadcrumb :home="home" :model="items">
             <template #item="{ item, props }">
@@ -43,7 +44,7 @@
         </div>
 
         <!-- 알림메시지  -->
-        <Toast position="bottom-right" />
+        <Toast position="bottom-right" group="bottom-group" />
         <div class="notifications-box" @click="showSecondary">
           <OverlayBadge :value="notificationInfos.length" severity="danger">
             <i class="pi pi-bell" style="font-size: 24px" />
@@ -51,16 +52,30 @@
         </div>
         <!-- 유저 프로필 영역 -->
         <div class="profile-box">
-          <img
-            :src="profileImage ? profileImage : defaultAvatar"
-            alt="Avatar Icon"
-            height="32px"
+          <Avatar
+            :image="profileImage ? profileImage : defaultAvatar"
+            class="profile-avatar"
+            size="large"
+            shape="circle"
             @click="toggle"
           />
           <p>{{ nickName }}</p>
           <!-- 프로필이미지 클릭시 드롭다운 메뉴 -->
           <div class="tiered-menu-box">
             <TieredMenu ref="menu" id="overlay_tmenu" :model="menus" popup />
+          </div>
+          <!--유저 프로필 모달  -->
+          <div class="profole-modal-box">
+            <Dialog
+              v-model:visible="visible"
+              header="유저 프로필"
+              :style="{ width: '20rem', backgroundColor: '#E8E7FF' }"
+              position="right"
+              :modal="false"
+              :draggable="true"
+            >
+              <UserProfileModal />
+            </Dialog>
           </div>
         </div>
       </div>
@@ -81,6 +96,7 @@ import { useAuthStore } from '@/stores/auth'; // Pinia auth 스토어
 import { fetchImageUrl } from '@/utils/image-load-utils';
 import defaultAvatar from '@/assets/icons/Avatar.svg?url'; // 이미지 가져오기
 import axios from 'axios';
+import UserProfileModal from '@/views/user/components/UserProfileModal.vue';
 const authStore = useAuthStore();
 const nickName = ref('');
 const profileImage = ref('');
@@ -91,6 +107,11 @@ const router = useRouter();
 const menu = ref();
 const menus = ref([]);
 const notificationInfos = ref([]);
+const visible = ref(false);
+
+const openPosition = (pos) => {
+  visible.value = true;
+};
 // 브레드크럼 홈경로 설정
 const home = ref({
   icon: 'pi pi-home',
@@ -122,6 +143,7 @@ const fetchNotification = async () => {
     // 알림 내역 저장
     notificationInfos.value = data.map((a, i) => {
       return {
+        group: 'bottom-group',
         severity: 'secondary',
         summary: a.header,
         detail: a.body,
@@ -148,7 +170,13 @@ watch(
   () => route.matched,
   async () => {
     updatePathInfo();
-    fetchNotification(); //알림 정보 가져오기
+    if (
+      userData.value != '' &&
+      userData.value != null &&
+      userData.value != undefined
+    ) {
+      fetchNotification();
+    } //알림 정보 가져오기
     console.log('라우트 변경됨:', items.value);
     // 유저 정보가져오기
     const userDataStorage = localStorage.getItem('user');
@@ -165,9 +193,17 @@ watch(
     menus.value = [
       {
         label: 'Profile',
+        icon: 'pi pi-user',
+        command: () => {
+          // router.push(`/user-profile/${userData.value?.userId}`);
+          openPosition();
+        },
+      },
+      {
+        label: 'Edit',
         icon: 'pi pi-user-edit',
         command: () => {
-          router.push(`/user-profile/${userData.value?.userId}`);
+          router.push(`/edit-profile/${userData.value?.userId}`);
         },
       },
       nickName.value != '게스트'
@@ -210,6 +246,11 @@ const toggle = (event) => {
   height: 78px;
   background-color: #ffffff;
   border-bottom: 1px solid #e9e9e9;
+
+  .profile-avatar {
+    width: 35px !important;
+    height: 35px !important;
+  }
 }
 
 .header-box {
@@ -293,5 +334,8 @@ const toggle = (event) => {
 
 .p-breadcrumb {
   min-width: 232px;
+}
+
+.profole-modal-box {
 }
 </style>

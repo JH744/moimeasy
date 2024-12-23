@@ -24,9 +24,13 @@ public class UserDTO {
     private Long roleId; // Role ID 추가
     private String roleName; // Role Name 추가
 
+    private String currentPassword;
+    private String confirmPassword;
+
     public UserDTO(User user) {
         this.userId = user.getUserId();
         this.userName = user.getUserName();
+        this.password = null; // 비밀번호는 반환하지 않음
         this.email = user.getEmail();
         this.phone = user.getPhone();
         this.nickname = user.getNickname();

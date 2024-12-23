@@ -1,6 +1,7 @@
 package com.kosa.moimeasy;
 
 
+import com.kosa.moimeasy.transaction.exception.CustomException;
 import com.kosa.moimeasy.user.exception.DuplicateEmailException;
 import com.kosa.moimeasy.user.exception.DuplicateNicknameException;
 import com.kosa.moimeasy.user.exception.SignupException;
@@ -53,8 +54,13 @@ public class GlobalExceptionHandler{
     @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleGlobalException(Exception ex){
     return new ResponseEntity<>("내부 서버 오류가 발생했습니다.",HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
-    //다른 예외
+  // CustomException 처리
+  @ExceptionHandler(CustomException.class)
+  public ResponseEntity<String> handleCustomException(CustomException ex) {
+    return new ResponseEntity<>(ex.getErrorMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  //다른 예외
 }

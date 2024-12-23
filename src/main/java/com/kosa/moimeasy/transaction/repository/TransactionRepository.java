@@ -18,7 +18,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByMoeimAccountAndDateRange(Long moeimId, LocalDateTime startDate, LocalDateTime endDate
     );
 
-    @Query("SELECT t FROM Transaction t JOIN t.userAccount u where u.moeimId = :moeimId AND t.transactedAt " +
+    @Query("SELECT t FROM Transaction t JOIN t.userAccount u where u.moeimId = :moeimId " +
+            "AND t.transactionType = 'REMITTANCE' AND t.transactedAt " +
             "BETWEEN :startDate AND :endDate ORDER BY t.transactedAt DESC")
     List<Transaction> findAllByMoeimId(Long moeimId,  LocalDateTime  startDate, LocalDateTime  endDate);
 
@@ -29,4 +30,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t where t.moeimAccount.moeimId = :moeimId ")
     List<Transaction> findByMoeimId(Long moeimId);
+
+    @Query("SELECT t FROM Transaction t where t.userAccount.userId = :userId ")
+    List<Transaction> findByUserId(Long userId);
 }

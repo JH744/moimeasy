@@ -48,13 +48,13 @@ server:
  port: 8088    # 원하는 포트를 설정 (기본값: 8088)
 
 springdoc:
- version: V0.0.1
+ version: 3.0.0
  swagger-ui:
   path: /swagger.html
   tags-sorter: alpha
   operations-sorter: alpha
  api-docs:
-  path: /api-docs
+  path: /v3/api-docs
  default:
   consumes-media-type: application/json;charset=UTF-8
   produces-media-type: application/json;charset=UTF-8

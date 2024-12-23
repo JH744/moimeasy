@@ -28,17 +28,14 @@ import Card from 'primevue/card';
 import Message from 'primevue/message';
 import EmojiPicker from 'vue3-emoji-picker';
 import 'vue3-emoji-picker/css';
-import ThemeSwitcher from './components/ThemeSwitcher.vue';
 import Dialog from 'primevue/dialog';
+import api from './axios'; // 중앙집중식 Axios 인스턴스 임포트
+const app = createApp(App);
+const pinia = createPinia();
 
 // axios 기본 설정 (Spring Boot 백엔드가 8088 포트라 가정)
 axios.defaults.baseURL = 'http://localhost:8088'; // 서버 URL 설정
-
-// 중앙집중식 Axios 인스턴스 임포트
-import api from './axios';
-
-const pinia = createPinia();
-const app = createApp(App);
+app.config.globalProperties.$axios = axios; // 엑시오스 전역프로퍼티 등록
 
 // 컴포넌트 전역 등록
 app.component('Header', Header);
@@ -56,7 +53,7 @@ app.component('FloatLabel', FloatLabel);
 app.component('Card', Card);
 app.component('Message', Message);
 app.component('EmojiPicker', EmojiPicker);
-app.component('ThemeSwitcher', ThemeSwitcher);
+app.component('Dialog', Dialog);
 
 // PrimeVue 플러그인 등록
 app.use(
@@ -73,7 +70,6 @@ app.use(
   },
   { ripple: true }
 );
-app.component('Dialog', Dialog);
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
