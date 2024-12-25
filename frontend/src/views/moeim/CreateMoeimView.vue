@@ -33,6 +33,7 @@
 <script>
 import axios from 'axios';
 import Modal from '@/components/Modal.vue';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
   components: { Modal },
@@ -46,10 +47,10 @@ export default {
   methods: {
     async createMoeim() {
       try {
-        const token = localStorage.getItem('accessToken'); // 저장된 토큰 가져오기
+        const authStore = useAuthStore();
+        const token = authStore.accessToken;
         const payload = { moeimName: this.moeimName };
 
-        // API 호출
         const response = await axios.post('/api/v1/moeim/create', payload, {
           headers: {
             'Content-Type': 'application/json',
@@ -57,11 +58,23 @@ export default {
           },
         });
 
-        // 성공 시 모달 표시
-        this.modalMessage = `"${response.data.moeimName}" 모임이 생성되었습니다. 모임 코드: ${response.data.moeimCode}`;
+        const { moeimId, moeimName, moeimCode } = response.data;
+
+        if (!moeimId || !moeimName || !moeimCode) {
+          throw new Error('서버 응답에 필요한 데이터가 없습니다.');
+        }
+
+        // authStore와 localStorage 업데이트
+        authStore.user = { ...authStore.user, moeimId };
+        localStorage.setItem('user', JSON.stringify(authStore.user));
+
+        // 모달 메시지 설정
+        this.modalMessage = `"${moeimName}" 모임이 생성되었습니다. 모임 코드: ${moeimCode}`;
         this.isModalVisible = true;
         this.isSuccess = true;
-        this.moeimName = ''; // 입력 필드 초기화
+
+        // 입력 필드 초기화
+        this.moeimName = '';
       } catch (error) {
         console.error('Error creating moeim:', error.response || error.message);
         this.modalMessage = '모임 생성에 실패했습니다. 다시 시도해주세요.';

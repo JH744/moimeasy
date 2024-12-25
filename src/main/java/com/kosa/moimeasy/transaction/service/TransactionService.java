@@ -342,6 +342,13 @@ public class TransactionService {
         List<Transaction> resultList = transactionRepository.findByMoeimAccountAndDateRange(
                 moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
         );
+
+        Long monthDeposit = transactionRepository.findMonthlyIncome(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+        );
+
+        Long monthExpense = transactionRepository.findMonthlyExpenditure(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+        );
+
         return TransactionListDto.Response.builder()
                 .transactionList(resultList.stream()
                         .map(transaction ->
@@ -349,7 +356,10 @@ public class TransactionService {
                                         .id(transaction.getId())
                                         .transactionTargetName(getTransactionTargetName(transaction))
                                         .amount(transaction.getAmount())
+                                        .balance(transaction.getMoeimAccount().getAmount())
                                         .type(determineTransactionType(transaction))
+                                        .monthDeposit(monthDeposit)
+                                        .monthExpense(monthExpense)
                                         .transactedAt(transaction.getTransactedAt())
                                     .build()
                 ).toList())

@@ -23,6 +23,14 @@ public class TransactionDto { // 거래내역 조회
 
     private String type;
 
+    private double balance;
+
+    private double monthDeposit;
+
+    private double monthExpense;
+
     @JsonFormat(shape = Shape.STRING,  pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime transactedAt;
+
+
 }

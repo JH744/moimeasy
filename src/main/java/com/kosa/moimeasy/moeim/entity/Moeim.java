@@ -1,5 +1,6 @@
 package com.kosa.moimeasy.moeim.entity;
 
+import com.kosa.moimeasy.chat.entity.ChatRoom;
 import com.kosa.moimeasy.transaction.entity.Transaction;
 import com.kosa.moimeasy.user.entity.User;
 import jakarta.persistence.*;
@@ -61,5 +62,15 @@ public class Moeim {
     // Moeim 엔티티를 저장하면 Transaction 엔티티들도 자동으로 저장된다. (삭제도 마찬가지)
     @OneToMany(mappedBy = "moeimAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transaction> transactionSampleList = new ArrayList<>();
+
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "chat_room_id", referencedColumnName = "id")
+    private ChatRoom chatRoom;
+
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
 
 }

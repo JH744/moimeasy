@@ -14,11 +14,11 @@ public class RemittanceDto { // 계좌 이체
 
         private Long userId;
 
+        private Long moeimId;
+
         @NotNull(message = "송금액은 필수값입니다.")
         @Min(value = 1, message = "송금 최소금액은 1원입니다.")
         private double amount;
-
-        private Long moeimId;
     }
 
     @Getter

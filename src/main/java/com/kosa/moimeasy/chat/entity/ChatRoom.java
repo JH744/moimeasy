@@ -1,6 +1,7 @@
 package com.kosa.moimeasy.chat.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kosa.moimeasy.moeim.entity.Moeim;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,10 @@ public class ChatRoom extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long createdBy; // 채팅방 생성자
+
+    @ManyToOne
+    @JoinColumn(name = "moeim_id")
+    private Moeim moeim;
 }
 
 

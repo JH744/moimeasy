@@ -1,4 +1,4 @@
-package com.kosa.moimeasy;
+package com.kosa.moimeasy.common.exception;
 
 
 import com.kosa.moimeasy.transaction.exception.CustomException;

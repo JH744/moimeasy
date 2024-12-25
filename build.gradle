@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.0'
+	id 'org.springframework.boot' version '3.2.6'
 	id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -32,7 +32,6 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	runtimeOnly 'mysql:mysql-connector-java:8.0.33'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -41,25 +40,26 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.mockito:mockito-junit-jupiter'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+	testImplementation 'org.mockito:mockito-core'
+	testImplementation 'org.mockito:mockito-junit-jupiter'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.webjars.bower:bootstrap:4.3.1'
-    implementation 'org.webjars.bower:vue:2.5.16'
-    implementation 'org.webjars.bower:axios:0.17.1'
-    implementation 'org.webjars:sockjs-client:1.1.2'
-    implementation 'org.webjars:stomp-websocket:2.3.3-1'
+	implementation 'org.webjars.bower:vue:2.5.16'
+	implementation 'org.webjars.bower:axios:0.17.1'
+	implementation 'org.webjars:sockjs-client:1.1.2'
+	implementation 'org.webjars:stomp-websocket:2.3.3-1'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' //json 처리용
-	implementation 'javax.xml.bind:jaxb-api:2.3.1'
+//	implementation 'javax.xml.bind:jaxb-api:2.3.1'
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
 	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.6' // Jackson JSON 직렬화 (RefreshToken을 JSON으로 저장하기 위함)
 	implementation 'com.fasterxml.jackson.core:jackson-databind' // JSON 직렬화/역직렬화용
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
 }
 
@@ -68,6 +68,6 @@ tasks.named('test') {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-parameters"
+	options.compilerArgs << "-parameters"
 }
 

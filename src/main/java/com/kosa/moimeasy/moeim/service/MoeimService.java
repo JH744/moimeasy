@@ -1,5 +1,8 @@
 package com.kosa.moimeasy.moeim.service;
 
+import com.kosa.moimeasy.chat.entity.ChatRoomUser;
+import com.kosa.moimeasy.chat.repository.ChatRoomRepository;
+import com.kosa.moimeasy.chat.repository.ChatRoomUserRepository;
 import com.kosa.moimeasy.invitation.entity.Invitation;
 import com.kosa.moimeasy.invitation.repository.InvitationRepository;
 import com.kosa.moimeasy.moeim.dto.MoeimDTO;
@@ -8,6 +11,7 @@ import com.kosa.moimeasy.moeim.repository.MoeimRepository;
 import com.kosa.moimeasy.security.repository.RoleRepository;
 import com.kosa.moimeasy.user.entity.Role;
 import com.kosa.moimeasy.user.entity.User;
+import com.kosa.moimeasy.chat.entity.ChatRoom;
 import com.kosa.moimeasy.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +31,13 @@ public class MoeimService {
     private InvitationRepository invitationRepository;
 
     @Autowired
+    private ChatRoomRepository chatRoomRepository;
+
+    @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private ChatRoomUserRepository chatRoomUserRepository;
 
     public Moeim createMoeim(MoeimDTO request) {
         // 1. 사용자 조회
@@ -46,7 +56,25 @@ public class MoeimService {
         moeim.setMoeimCode(generateMoeimCode());
         Moeim savedMoeim = moeimRepository.save(moeim);
 
-        // 4. 사용자 업데이트 (모임 ID, 역할 변경)
+        // 4. 채팅방 생성 및 연결
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setName(request.getMoeimName() + " 단체톡방");
+        chatRoom.setCreatedBy(request.getUserId());
+        chatRoom.setMoeim(savedMoeim);
+        chatRoom = chatRoomRepository.save(chatRoom);
+
+        // 6. 모임장 채팅방 멤버로 추가
+        ChatRoomUser chatRoomUser = new ChatRoomUser();
+        chatRoomUser.setChatRoom(chatRoom);
+        chatRoomUser.setUser(user);
+        chatRoomUser.setUserNickname(user.getNickname());
+        chatRoomUserRepository.save(chatRoomUser);
+
+        // 모임에 채팅방 연결
+        savedMoeim.setChatRoom(chatRoom);
+        moeimRepository.save(savedMoeim);
+
+        // 5. 사용자 업데이트 (모임 ID, 역할 변경)
         user.setMoeimId(savedMoeim.getMoeimId());
         user.setRole(adminRole); // 관리자 역할 설정
         user.setRole(user.getRole()); // Enum 값을 설정 /
@@ -83,6 +111,16 @@ public class MoeimService {
         // 초대 상태를 COMPLETED로 업데이트
         invitation.setStatus(Invitation.InvitationStatus.COMPLETED);
         invitationRepository.save(invitation);
+
+        // 모임의 채팅방에 사용자 추가
+        ChatRoom chatRoom = moeim.getChatRoom();
+        if (chatRoom != null) {
+            ChatRoomUser chatRoomUser = new ChatRoomUser();
+            chatRoomUser.setChatRoom(chatRoom);
+            chatRoomUser.setUser(user);
+            chatRoomUser.setUserNickname(user.getNickname());
+            chatRoomUserRepository.save(chatRoomUser);
+        }
 
         return moeim.getMoeimId(); // 반환
     }

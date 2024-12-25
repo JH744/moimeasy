@@ -1,8 +1,11 @@
 <template>
   <div class="total-frame">
     <!-- <PayMenuList /> 메뉴 위치 -->
-    <div class="title-bar datatable-aligned">
+    <div class="title-bar">
       <div class="title">{{ currentMonth }}</div>
+      <div class="accountBalance"> 잔액 : {{ accountBalance }}원</div>
+      <div class="deposit"> 수입 : {{ totalDeposit }}</div>
+      <div class="expense"> 지출 : {{ totalExpense }}</div>
       <div class="icon-button-group">
         <i class="pi pi-caret-left" style="font-size: 1rem" @click="updateMonth(-1)"></i>
         <i class="pi pi-calendar-times" style="font-size: 1rem"></i>
@@ -22,7 +25,6 @@
         </DataTable>
       </template>
       <template v-else>
-        <p>데이터가 없습니다.</p>
       </template>
     </div>
   </div>
@@ -31,9 +33,11 @@
 <script setup>
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import PayMenuList from './TransactionMenuList.vue';
 import Button from 'primevue/button';
 import axios from "axios";
+import Dialog from 'primevue/dialog';
+import '@/views/transaction/style/transaction.style.css';
+import '@/views/transaction/style/Modal.style.css';
 import 'primeicons/primeicons.css';
 import { ref, onMounted } from 'vue';
 import { useLoadingStore } from '@/stores/useLoadingStore';
@@ -42,8 +46,24 @@ const loadingStore = useLoadingStore();
 const currentMonth = ref('');
 const dt = ref();
 const products = ref([]); // 초기 값으로 빈 배열 설정
-const loading = ref(true); // 로딩 상태를 나타내는 변수
 const currentDate = ref(new Date()); // 현재 날짜를 기준으로 동작
+const accountBalance = ref(0);
+const totalDeposit = ref(0);
+const totalExpense = ref(0);
+const visible = ref(false);
+
+
+// 데이터가 없을 때 다이얼로그를 표시
+if (!products.value.length) {
+  visible.value = true;
+}
+
+// 다이얼로그 닫기 함수
+const closeDialog = () => {
+  visible.value = false;
+};
+
+
 const columns = [
   { field: 'tradedate', header: '날짜' },
   { field: 'tradelist', header: '거래내역' },
@@ -83,6 +103,16 @@ const fetchTransactions = async () => {
     });
 
     if (response.data.transactionList) {
+      const transactionList = response.data.transactionList;
+
+      if (transactionList)
+        accountBalance.value = transactionList[transactionList.length - 1].balance;
+
+      totalDeposit.value = transactionList[transactionList.length - 1].monthDeposit;
+
+      totalExpense.value = transactionList[transactionList.length - 1].monthExpense;
+
+
       products.value = response.data.transactionList.map(transaction => ({
         tradedate: transaction.transactedAt,
         tradelist: transaction.transactionTargetName,
@@ -122,6 +152,8 @@ const exportCSV = () => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
+
 .total-frame {
   display: flex;
   flex-direction: column;
@@ -188,5 +220,12 @@ const exportCSV = () => {
 
 :deep(.export-button .p-button-label) {
   font-weight: bold !important;
+}
+
+/* DataTable 전체에 폰트 적용 */
+.custom-datatable .p-datatable {
+  font-family: 'Noto Sans KR', sans-serif !important;
+  font-size: 1.5rem !important;
+  color: #333 !important;
 }
 </style>

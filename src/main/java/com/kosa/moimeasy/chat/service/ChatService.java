@@ -8,6 +8,8 @@ import com.kosa.moimeasy.chat.entity.ChatMessage.MessageType;
 import com.kosa.moimeasy.chat.entity.ChatRoomUser;
 import com.kosa.moimeasy.chat.repository.ChatRoomRepository;
 import com.kosa.moimeasy.chat.repository.ChatRoomUserRepository;
+import com.kosa.moimeasy.moeim.entity.Moeim;
+import com.kosa.moimeasy.moeim.repository.MoeimRepository;
 import com.kosa.moimeasy.user.entity.User;
 import com.kosa.moimeasy.user.repository.UserRepository;
 
@@ -30,6 +32,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
+    private final MoeimRepository moeimRepository;
     private final ChatRoomUserRepository chatRoomUserRepository;
 
     @Transactional
@@ -162,6 +165,50 @@ public class ChatService {
                 .map(User::getNickname)
                 .collect(Collectors.toList());
     }
+
+
+    @Transactional
+    public void inviteMembersToRoom(Long roomId, List<Long> memberIds, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        // 단체톡방은 초대 불가
+        if (chatRoom.getMoeim() != null) {
+            throw new IllegalArgumentException("단체톡방에서는 초대가 불가능합니다.");
+        }
+
+        List<User> usersToInvite = userRepository.findAllById(memberIds);
+        for (User user : usersToInvite) {
+            boolean alreadyMember = chatRoom.getMembers().stream()
+                    .anyMatch(member -> member.getUser().getUserId().equals(user.getUserId()));
+
+            if (!alreadyMember) {
+                ChatRoomUser chatRoomUser = new ChatRoomUser();
+                chatRoomUser.setChatRoom(chatRoom);
+                chatRoomUser.setUser(user);
+                chatRoomUser.setUserNickname(user.getNickname());
+                chatRoomUserRepository.save(chatRoomUser);
+            }
+        }
+    }
+
+    @Transactional
+    public void leaveRoom(Long roomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+
+        ChatRoomUser chatRoomUser = chatRoomUserRepository.findByChatRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방 멤버를 찾을 수 없습니다."));
+
+        chatRoomUserRepository.delete(chatRoomUser);
+
+        // 멤버가 남아있지 않으면 채팅방 삭제
+        if (chatRoomUserRepository.countByChatRoomId(roomId) == 0) {
+            chatRoomRepository.delete(chatRoom);
+        }
+    }
+
+
 
 
 

@@ -34,7 +34,7 @@ import axios from 'axios';
 import Modal from '@/components/Modal.vue';
 import { useAuthStore } from '@/stores/auth';
 
-axios.defaults.baseURL = 'http://l19:8088';
+axios.defaults.baseURL = 'http://localhost:8088';
 axios.defaults.withCredentials = true;
 
 export default {

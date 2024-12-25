@@ -19,7 +19,7 @@
         <BoardView />
       </div>
       <div class="category-section scrollable">
-        <Category />
+        <CategoryChart />
       </div>
       <div class="settlement-section scrollable">
         <SettlementView />
@@ -34,8 +34,8 @@ import BoardView from '@/views/board/BoardView.vue';
 import ScheduleCalendarMini from '@/views/schedule/components/ScheduleCalendarMini.vue';
 import SettlementView from '@/views/moeim/SettlementView.vue';
 import ChatLayoutView from '@/views/chat/ChatRoomListView.vue';
-import Category from '@/views/transaction/Category.vue';
 import { useAuthStore } from '@/stores/auth';
+import CategoryChart from './transaction/CategoryChart.vue';
 
 export default {
   name: 'MainPage',
@@ -45,7 +45,7 @@ export default {
     ScheduleCalendarMini,
     SettlementView,
     ChatLayoutView,
-    Category,
+    CategoryChart,
   },
   setup() {
     const authStore = useAuthStore();
@@ -66,7 +66,8 @@ export default {
   flex-direction: column;
   padding: 10px;
   background-color: #f5f7fa;
-  height: 100vh; /* 전체 화면 높이 */
+  height: 100vh;
+  /* 전체 화면 높이 */
 }
 
 /* 상단 섹션 */
@@ -74,23 +75,27 @@ export default {
 .bottom-section {
   display: flex;
   gap: 10px;
-  flex: 1; /* 동일한 높이 */
+  flex: 1;
+  /* 동일한 높이 */
 }
 
 /* 가로 비율 조정 */
 .profile-section,
 .chat-section {
-  flex: 1; /* 좁은 너비 */
+  flex: 1;
+  /* 좁은 너비 */
   background-color: white;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-y: auto; /* 스크롤 활성화 */
+  overflow-y: auto;
+  /* 스크롤 활성화 */
   max-height: 45vh;
 }
 
 .calendar-section {
-  flex: 3; /* 넓은 너비 */
+  flex: 3;
+  /* 넓은 너비 */
   background-color: white;
   padding: 10px;
   border-radius: 10px;
@@ -120,10 +125,12 @@ export default {
 
 /* 섹션 너비 조정 */
 .narrow {
-  flex: 1; /* 좁은 섹션 */
+  flex: 1;
+  /* 좁은 섹션 */
 }
 
 .wide {
-  flex: 3; /* 넓은 섹션 */
+  flex: 3;
+  /* 넓은 섹션 */
 }
 </style>

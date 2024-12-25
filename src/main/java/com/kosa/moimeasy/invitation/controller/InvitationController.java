@@ -32,7 +32,7 @@ public class InvitationController {
         }
 
         Long userId = Long.valueOf(userDetails.getUsername());
-        String moeimCode = invitationService.sendInvitation(userId, request, request.getHtmlContent());
+        String moeimCode = invitationService.sendInvitation(userId, request);
 
         // 모임 코드와 성공 메시지를 함께 반환
         return ResponseEntity.ok(Map.of(
@@ -40,6 +40,7 @@ public class InvitationController {
                 "moeimCode", moeimCode
         ));
     }
+
 
     @GetMapping
     public ResponseEntity<List<Invitation>> getInvitations(@AuthenticationPrincipal UserDetails userDetails) {

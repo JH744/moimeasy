@@ -1,6 +1,8 @@
 <template>
   <Toast position="top-right" />
-  <ConfirmDialog group="positioned" :modal="false"></ConfirmDialog>
+  <!-- 알정 조회 & 삭제 다이얼로그 -->
+  <ScheduleDialog :selectedEvent="selectedEvent" />
+  <!-- 일정 추가 다이얼로그 -->
   <Dialog
     v-model:visible="visible"
     :modal="false"
@@ -83,6 +85,20 @@
     </template>
   </Dialog>
 
+  <!-- 일정 조회 다이얼로그 -->
+  <!-- <Dialog
+    v-model:visible="visible"
+    header="Edit Profile"
+    :style="{ width: '25rem' }"
+    :position="position"
+    :modal="true"
+    :draggable="false"
+  >
+    <span class="text-surface-500 dark:text-surface-400 block mb-8"
+      >Update your information.</span
+    >
+  </Dialog> -->
+
   <div class="demo-app">
     <div class="demo-app-main">
       <FullCalendar
@@ -107,6 +123,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import googleCalendarPlugin from '@fullcalendar/google-calendar';
+import DatePicker from 'primevue/datepicker';
 import { createEventId } from '@/utils/event-utils';
 import axios from 'axios';
 import { useLoadingStore } from '@/stores/useLoadingStore';
@@ -117,7 +134,6 @@ import { useAuthStore } from '@/stores/auth';
 const auth = useAuthStore();
 const toast = useToast();
 const primeConfirm = useConfirm();
-
 const types = ref([
   { name: '타입A', type: 'custom-event1' },
   { name: '타입B ', type: 'holiday-event' },
@@ -132,6 +148,8 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import { fetchAddNotification } from '@/utils/notification-add-utils';
+import formatDateTime from '@/utils/\bdate-fomat-utile';
+import ScheduleDialog from './ScheduleDialog.vue';
 
 // 구글 캘린더 API 설정
 const googleCalendarApiKey = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -152,6 +170,7 @@ const newEventType = ref('');
 const currentEvents = ref([]);
 const resolvePromise = ref(null);
 const rejectPromise = ref(null);
+const selectedEvent = ref({});
 
 // Fullcalendar 옵션 설정
 const calendarOptions = reactive({
@@ -184,33 +203,15 @@ const calendarOptions = reactive({
   dayCellContent: (info) => info.date.getDate(),
   select: handleDateSelect,
   eventClick: handleEventClick,
-  eventsSet: handleEvents,
+  eventsSet: handleEvents, //캘린더가 렌더링된 후 현재 렌더링된 이벤트 배열을 반환
   eventAdd: handleEventAdd,
   eventChange: handleEventChange,
   eventRemove: handleEventRemove,
-  // eventSources: [
-  //   {
-  //     googleCalendarId: googleCalendarId,
-  //     className: 'holiday-event',
-  //   },
-  // ],
-  // customButtons: {
-  //   myCustomButton: {
-  //     text: 'Add',
-  //     click: () => {
-  //       const calendarApi = calendarRef.value.getApi();
-  //       calendarApi.addEvent({
-  //         title: 'New Event',
-  //         start: new Date(),
-  //         end: new Date(),
-  //       });
-  //       alert('새 이벤트가 추가되었습니다!');
-  //     },
-  //   },
-  // },
 });
 
 //아래부터 메서드 정의
+
+/**캘린더 일정선택 이벤트 */
 async function handleDateSelect(selectInfo) {
   try {
     // 다이얼로그 OK 시 전달되는 일정 데이터
@@ -237,7 +238,7 @@ async function handleDateSelect(selectInfo) {
     selectInfo.view.calendar.unselect();
   }
 }
-// 일정 추가 다이얼로그 오픈
+/**  일정 추가 다이얼로그 오픈하기 */
 function openDialog(selectInfo) {
   //일정 이벤트 속성 초기화
   visible.value = true;
@@ -254,7 +255,7 @@ function openDialog(selectInfo) {
     rejectPromise.value = reject;
   });
 }
-
+// 다이얼로그 추가 버튼 클릭
 function resolveDialog() {
   if (newEventTitle.value.trim()) {
     const eventData = {
@@ -272,12 +273,13 @@ function resolveDialog() {
   }
   closeDialog();
 }
-
+// 다이얼로그 취소
 function rejectDialog() {
   rejectPromise.value('취소됨');
   closeDialog();
 }
 
+// 다이얼로그 닫기
 function closeDialog() {
   visible.value = false;
 }
@@ -287,8 +289,9 @@ function handleEventClick(clickInfo) {
   confirmPosition('top', clickInfo);
 }
 
+// 서버에서 가져온 일정 데이터 처리
 function handleEvents(events) {
-  console.log(events);
+  console.log('일정 불러오기', events);
   currentEvents.value = events;
 }
 
@@ -323,6 +326,7 @@ async function handleEventAdd(eventInfo) {
   }
 }
 
+// 서버에 일정 변경 요청
 async function handleEventChange(eventInfo) {
   // console.log('변경이벤트호출');
   const event = eventInfo.event;
@@ -338,7 +342,7 @@ async function handleEventChange(eventInfo) {
     console.error('이벤트 변경 실패:', error);
   }
 }
-
+// 서버에 일정 삭제 요청
 async function handleEventRemove(eventInfo) {
   // console.log('삭제이벤트호출');
   const event = eventInfo.event;
@@ -349,7 +353,7 @@ async function handleEventRemove(eventInfo) {
     console.error('이벤트 삭제 실패:', error);
   }
 }
-
+// 서버에서 일정 데이터 가져오기
 async function fetchEvents() {
   loadingStore.startLoading(); // 로딩 스피너
   try {
@@ -400,14 +404,26 @@ const showSuccess = () => {
     life: 3000,
   });
 };
-const confirmPosition = (position, clickInfo) => {
-  console.error('dddd');
+
+/**  일정 조회&삭제 다이얼로그*/
+const confirmPosition = (positioned, clickInfo) => {
+  // 첫번째 파라미터는 위치, 두번째 파라미터는 클릭된 이벤트 정보
+  console.log('삭제 클릭 이벤트의 정보 ', clickInfo.event);
+
+  selectedEvent.value = {
+    title: clickInfo.event.title,
+    start: formatDateTime(clickInfo.event.start),
+    end: formatDateTime(clickInfo.event.end),
+    location: clickInfo.event.extendedProps.location,
+    description: clickInfo.event.extendedProps.description,
+  };
+
   primeConfirm.require({
     group: 'positioned',
-    message: `등록된 일정 '${clickInfo.event.title}'을(를) 삭제하시겠습니까?`,
-    header: '일정 삭제',
+    // message: `등록된 일정 '${clickInfo.event.title}'을(를) 삭제하시겠습니까?`,
+    header: '일정 조회',
     icon: 'pi pi-info-circle',
-    position: 'top',
+    position: 'right',
     rejectProps: {
       label: '취소',
       severity: 'secondary',
@@ -427,14 +443,7 @@ const confirmPosition = (position, clickInfo) => {
         life: 3000,
       });
     },
-    reject: () => {
-      toast.add({
-        severity: 'error',
-        summary: '일정삭제',
-        detail: '취소되었습니다',
-        life: 3000,
-      });
-    },
+    reject: () => {},
   });
 };
 
@@ -448,6 +457,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* 기존 스타일 유지 */
-</style>
+<style scoped></style>

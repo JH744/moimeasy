@@ -101,8 +101,9 @@
             id="file"
             accept="image/*"
             @change="onFileChange"
-            class="file-input"
+            class="custom-file-input"
           />
+          <label for="file" class="custom-file-label">파일 선택</label>
         </div>
       </div>
       <template #footer>
@@ -429,5 +430,34 @@ label {
 }
 .status-rejected {
   color: red;
+}
+.custom-file-input {
+  position: absolute;
+  z-index: -1;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.custom-file-label {
+  display: inline-block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  background-color: #7f56d9;
+  border: 2px solid #7f56d9;
+  border-radius: 5px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.custom-file-label:hover {
+  background-color: #6a48b0;
+  border-color: #6a48b0;
 }
 </style>

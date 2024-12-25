@@ -33,4 +33,27 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t where t.userAccount.userId = :userId ")
     List<Transaction> findByUserId(Long userId);
+
+
+    // 이번 달 수입
+    @Query("SELECT COALESCE(SUM(t.amount),0) FROM Transaction t " +
+            "WHERE t.moeimAccount.moeimId = :moeimId " +
+            "  AND t.transactedAt BETWEEN :startDate AND :endDate " +
+            "  AND t.transactionType = 'REMITTANCE'")
+    Long findMonthlyIncome(Long moeimId, LocalDateTime startDate, LocalDateTime endDate);
+
+    // 이번 달 지출
+    @Query("SELECT COALESCE(SUM(t.amount),0) FROM Transaction t " +
+            "WHERE t.moeimAccount.moeimId = :moeimId " +
+            "  AND t.transactedAt BETWEEN :startDate AND :endDate " +
+            "  AND t.transactionType = 'WITHDRAW'")
+    Long findMonthlyExpenditure(Long moeimId, LocalDateTime startDate, LocalDateTime endDate);
+
+    // 가장 최근 거래의 balance만 가져오기
+//    @Query("SELECT t.moeimAccount.amount FROM Transaction t " +
+//            "WHERE t.moeimAccount.moeimId = :moeimId " +
+//            "  AND t.transactedAt BETWEEN :startDate AND :endDate " +
+//            "ORDER BY t.transactedAt DESC")
+//    List<Long> findBalancesDesc(Long moeimId, LocalDateTime startDate, LocalDateTime endDate);
+
 }

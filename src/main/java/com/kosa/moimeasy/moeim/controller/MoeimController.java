@@ -23,18 +23,27 @@ public class MoeimController {
     private MoeimService moeimService;
 
     @PostMapping("/create")
-    public ResponseEntity<Moeim> createMoeim(@RequestBody MoeimDTO request,
-                                             @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> createMoeim(@RequestBody MoeimDTO request, @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Long userId = Long.valueOf(userDetails.getUsername()); // UserDetails에서 userId 가져오기
+        Long userId = Long.valueOf(userDetails.getUsername());
         request.setUserId(userId);
 
-        Moeim createdMoeim = moeimService.createMoeim(request);
-        return ResponseEntity.ok(createdMoeim);
+        try {
+            Moeim createdMoeim = moeimService.createMoeim(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("moeimId", createdMoeim.getMoeimId());
+            response.put("moeimName", createdMoeim.getMoeimName());
+            response.put("moeimCode", createdMoeim.getMoeimCode());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("모임 생성 중 오류 발생: " + e.getMessage());
+        }
     }
+
 
     @PostMapping("/join")
     public ResponseEntity<?> joinMoeim(@RequestBody MoeimDTO request,

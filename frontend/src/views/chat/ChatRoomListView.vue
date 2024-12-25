@@ -25,6 +25,19 @@
                 : '참여자 없음'
             }}
           </span>
+
+          <div class="dropdown">
+            <button @click="toggleDropdown(room.id)" class="dropdown-btn">
+              +
+            </button>
+            <div
+              class="dropdown-menu"
+              :class="{ show: dropdownOpen === room.id }"
+            >
+              <button @click="openInviteModal(room.id)">회원 초대</button>
+              <button @click="leaveRoom(room.id)">나가기</button>
+            </div>
+          </div>
         </div>
         <hr />
         <p class="room-participants">
@@ -39,6 +52,48 @@
       </li>
     </ul>
 
+    <!-- 초대 모달 -->
+    <Dialog
+      header="회원 초대"
+      :visible="isInviteModalOpen"
+      style="width: 50vw"
+      :modal="true"
+      :closable="false"
+      @hide="closeInviteModal"
+    >
+      <div class="modal-content">
+        <h4>초대 가능한 회원</h4>
+        <div class="members-list">
+          <ul>
+            <li
+              v-for="member in availableMembers"
+              :key="member.userId"
+              class="member-item"
+            >
+              <Checkbox
+                :value="member.userId"
+                v-model="selectedMembers"
+                class="member-checkbox"
+              />
+              <label>{{ member.nickname }}</label>
+            </li>
+          </ul>
+        </div>
+
+        <div class="modal-buttons">
+          <Button
+            @click="sendInvitations"
+            label="초대하기"
+            class="p-button-success"
+          />
+          <Button
+            @click="closeInviteModal"
+            label="취소"
+            class="p-button-secondary"
+          />
+        </div>
+      </div>
+    </Dialog>
     <!-- 채팅방 생성 모달 -->
     <Dialog
       header="채팅방 생성"
@@ -118,6 +173,10 @@ export default {
       isCreateRoomModalOpen: false,
       newRoomName: '',
       selectedMembers: [],
+      dropdownOpen: null,
+      availableMembers: [],
+      isInviteModalOpen: false,
+      currentRoomId: null,
     };
   },
   setup() {
@@ -199,6 +258,7 @@ export default {
         });
 
         this.rooms.push(response.data);
+        await this.fetchRooms();
         this.closeCreateRoomModal();
       } catch (error) {
         console.error('Error creating chat room:', error);
@@ -210,6 +270,81 @@ export default {
         return;
       }
       this.$emit('selectRoom', roomId);
+    },
+    toggleDropdown(roomId) {
+      // 클릭한 드롭다운이 열리거나 닫힙니다.
+      this.dropdownOpen = this.dropdownOpen === roomId ? null : roomId;
+    },
+    async fetchAvailableMembers(roomId) {
+      try {
+        const token = this.authStore.accessToken;
+        const moeimId = this.authStore.user?.moeimId;
+
+        if (!moeimId) {
+          console.error('moeimId is not available in authStore.');
+          return;
+        }
+
+        const response = await axios.get('/api/v1/users/members', {
+          params: { moeimId },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const room = this.rooms.find((room) => room.id === roomId);
+
+        // 채팅방에 없는 멤버 필터링
+        this.availableMembers = response.data.filter(
+          (member) => !room.members.includes(member.nickname)
+        );
+      } catch (error) {
+        console.error('Error fetching available members:', error);
+      }
+    },
+    openInviteModal(roomId) {
+      this.currentRoomId = roomId;
+      this.fetchAvailableMembers(roomId);
+      this.isInviteModalOpen = true;
+    },
+    closeInviteModal() {
+      this.isInviteModalOpen = false;
+      this.selectedMembers = [];
+      this.currentRoomId = null;
+    },
+    async sendInvitations() {
+      try {
+        const token = this.authStore.accessToken;
+        const roomId = this.currentRoomId;
+
+        const payload = this.selectedMembers; // 선택된 사용자 ID 배열
+        await axios.post(`/api/v1/chat/room/${roomId}/invite`, payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        this.closeInviteModal();
+        this.dropdownOpen = null;
+        await this.fetchRooms(); // 채팅방 목록 갱신
+      } catch (error) {
+        console.error('Error sending invitations:', error);
+        alert('회원 초대 중 오류가 발생했습니다.');
+      }
+    },
+    async leaveRoom(roomId) {
+      try {
+        const token = this.authStore.accessToken;
+        await axios.delete(`/api/v1/chat/room/${roomId}/leave`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await this.fetchRooms(); // 채팅방 목록 갱신
+      } catch (error) {
+        console.error('Error leaving room:', error);
+        alert('채팅방 나가기 중 오류가 발생했습니다.');
+      }
     },
   },
   mounted() {
@@ -359,10 +494,58 @@ hr {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .room-participants {
   font-size: 14px;
   color: #777;
+}
+.options-dropdown-container {
+  position: absolute;
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f1f1f1;
+  color: #7f56d9;
 }
 </style>

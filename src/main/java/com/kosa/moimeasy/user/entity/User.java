@@ -65,6 +65,8 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "userAccount", fetch = FetchType.LAZY)
     private List<Transaction> transactionSample = new ArrayList<>();
 
+
+
 }
 
 

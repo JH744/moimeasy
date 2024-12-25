@@ -23,13 +23,18 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "USER_ID", nullable = false)
     @JsonIgnore // 순환참조방지
     private User writer;
+
     @Column(name = "TITLE", nullable = false)
     private String title;
 
     @Column(name = "content", columnDefinition = "LONGTEXT", nullable = true)
     private String content;
+
+    @Builder.Default
     @Column(name = "Tag" , nullable = true)
     private String tag = "일반";
+
+    @Builder.Default
     @Column(name = "Is_Notice",nullable = false)
     private Boolean isNotice= false;
 

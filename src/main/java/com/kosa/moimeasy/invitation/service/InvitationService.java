@@ -32,7 +32,7 @@ public class InvitationService {
     @Autowired
     private MoeimRepository moeimRepository;
 
-    public String sendInvitation(Long userId, EmailRequest request, String htmlContent) {
+    public String sendInvitation(Long userId, EmailRequest request) {
         if (userId == null) {
             throw new IllegalArgumentException("userId는 null일 수 없습니다.");
         }
@@ -52,14 +52,38 @@ public class InvitationService {
                 .getMoeimCode();
 
         try {
+            // HTML 이메일 콘텐츠 생성
+            String htmlContent = String.format("""
+        <!DOCTYPE html>
+        <html lang="ko">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>MoeimEasy 초대장</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f7f7f7; color: #333;">
+            <div style="max-width: 600px; margin: 20px auto; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+                <div style="background-color: #7f56d9; color: #fff; padding: 20px;">
+                    <h1 style="margin: 0; font-size: 24px;">MoeimEasy에서 초대합니다!</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="font-size: 16px; line-height: 1.5; color: #414651;">%s</p>
+                    <p style="font-size: 18px; font-weight: bold; color: #7f56d9;">모임 코드: %s</p>
+                </div>
+                <div style="padding: 10px; background-color: #f1f1f1; font-size: 12px; color: #888;">
+                    <p style="margin: 0;">이 이메일은 MoeimEasy의 초대 이메일입니다. 수신을 원하지 않는다면 무시하세요.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """, request.getMessage(), moeimCode);
+
             // 이메일 전송
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-
-            String finalHtmlContent = htmlContent + "";
             helper.setTo(request.getEmail());
             helper.setSubject("MoeimEasy 초대");
-            helper.setText(finalHtmlContent, true);
+            helper.setText(htmlContent, true);
             helper.setFrom("moeimeasy@gmail.com", "MoeimEasy Team");
 
             mailSender.send(mimeMessage);
@@ -72,13 +96,14 @@ public class InvitationService {
             invitation.setCreatedAt(LocalDateTime.now());
             invitationRepository.save(invitation);
 
-            // 모임 코드 반환
             return moeimCode;
 
         } catch (Exception e) {
             throw new RuntimeException("이메일 전송 실패: " + e.getMessage());
         }
     }
+
+
 
 
     public List<Invitation> getAllInvitations(Long userId) {
