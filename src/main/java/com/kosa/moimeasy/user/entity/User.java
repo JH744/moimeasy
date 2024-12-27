@@ -1,17 +1,24 @@
 package com.kosa.moimeasy.user.entity;
 
+import com.kosa.moimeasy.common.entity.BaseEntity;
+import com.kosa.moimeasy.transaction.entity.Transaction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
-public class User {
+@Table(name = "users")
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(nullable = false, length = 100)
@@ -20,8 +27,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(length = 255)
-    private String address;
 
     @Column(nullable = false, unique = true, length = 255)
     private String email;
@@ -29,36 +34,40 @@ public class User {
     @Column(length = 20)
     private String phone;
 
-    @Column(name = "CREATE_AT", nullable = false, updatable = false)
-    private LocalDateTime createAt;
-
-    @Column(name = "UPDATE_AT")
-    private LocalDateTime updateAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('admin', 'user') DEFAULT 'user'")
+    @ManyToOne(fetch = FetchType.LAZY) // Role과의 관계 설정
+    @JoinColumn(name = "role_id", nullable = false) // 외래 키 매핑
     private Role role;
 
-    @Column(length = 25)
+    @Column(length = 25, nullable = true)
     private String nickname;
 
-    @Column
+    @Column(length = 255 , nullable = true)
+    private String profileImage;
+
+
+    @Column(name = "last_notification_viewed_at")
+    private LocalDateTime lastNotificationViewedAt; // 마지막으로 확인한 알림시간
+
+    @Column(nullable = true)
     private Long moeimId;
 
-    @PrePersist
-    public void prePersist() {
-        this.createAt = LocalDateTime.now();
-        if (this.role == null) {
-            this.role = Role.user;
-        }
-    }
+    @Column(name = "user_account_number", nullable = false) // 10자리 자동 생성
+    private String accountNumber;
 
-    @PreUpdate
-    public void preUpdate() {
-        this.updateAt = LocalDateTime.now();
-    }
+//    @Column(name = "user_account_password", nullable = false) // 유효성 검사 진행
+//    private String accountPassword;
 
-    public enum Role {
-        user,admin
-    }
+    // 기본 값을 0으로 설정
+    @Column(name = "user_account_amount", nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
+    private double amount = 0.0;
+
+    // 거래내역 테이블
+    @OneToMany(mappedBy = "userAccount", fetch = FetchType.LAZY)
+    private List<Transaction> transactionSample = new ArrayList<>();
+
+
+
 }
+
+
+

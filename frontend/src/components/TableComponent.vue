@@ -115,7 +115,8 @@
   <style scoped>
   .table-container {
     width: 100%;
-    margin: 20px auto;
+    max-width: 800px;
+    margin: 0px 0px 0px 200px;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;

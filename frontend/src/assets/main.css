@@ -1,40 +1,27 @@
-@import "./base.css";
+@import './base.css';
 
-.sidebar {
-  float: left;
+:root {
+  --main-color: #7f56d9; /* 주요 색상 */
+  --secondary-color: #ebeef0; /* 보조 색상 */
+  --font-size: 16px; /* 기본 글꼴 크기 */
+  --padding: 10px; /* 패딩 값 */
+
+  /* 프라임뷰 기본색상 변경 */
+  --p-primary-50: var(--p-violet-50) !important;
+  --p-primary-100: var(--p-violet-100) !important;
+  --p-primary-200: var(--p-violet-200) !important;
+  --p-primary-300: var(--p-violet-300) !important;
+  --p-primary-400: var(--p-violet-400) !important;
+  --p-primary-500: var(--p-violet-500) !important;
+  --p-primary-600: var(--p-violet-600) !important;
+  --p-primary-700: var(--p-violet-700) !important;
+  --p-primary-800: var(--p-violet-800) !important;
+  --p-primary-900: var(--p-violet-900) !important;
+  --p-primary-950: var(--p-violet-950) !important;
 }
-
-/* 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+/* .p-dialog-content {
+  .next-button {
+    background-color: #7f56d9 !important;
+    border: 1px solid #7f56d9 !important;
   }
 } */

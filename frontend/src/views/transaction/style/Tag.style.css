@@ -1,0 +1,50 @@
+.tag {
+  display: inline-block;
+  padding: 0.25em 0.5em;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* 상태별 스타일 */
+.tag-success {
+  background-color: #28a745;
+}
+
+.tag-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.tag-error {
+  background-color: #dc3545;
+}
+
+.tag-info {
+  background-color: #17a2b8;
+}
+
+.p-tag.custom-success {
+  background-color: #c19ed2 !important;
+  /* 녹색 */
+  color: white !important;
+}
+
+.p-tag.custom-danger {
+  background-color: #ffa2c3 !important;
+  /* 빨간색 */
+  color: white !important;
+}
+
+.p-tag.custom-info {
+  background-color: #96c2ee !important;
+  /* 파란색 */
+  color: white !important;
+}
+
+.p-tag.custom-warning {
+  background-color: #68a3ee !important;
+  /* 노란색 */
+  color: black !important;
+}

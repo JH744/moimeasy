@@ -119,7 +119,7 @@ blockquote:before,
 blockquote:after,
 q:before,
 q:after {
-  content: "";
+  content: '';
   content: none;
 }
 table {
@@ -130,5 +130,7 @@ a {
   text-decoration: none;
   color: black;
 }
-
+body {
+  font-family: 'Noto Sans KR', 'Poppins', 'Montserrat', 'Inter', sans-serif;
+}
 /** <초기화 코드/>   **/

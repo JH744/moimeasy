@@ -9,17 +9,39 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.7.8",
+    "@firebase/app": "^0.10.16",
+    "@firebase/firestore": "^4.7.5",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/google-calendar": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
+    "@primevue/forms": "^4.2.4",
     "@primevue/themes": "^4.2.4",
+    "axios": "^1.7.8",
+    "chart.js": "^4.4.7",
+    "firebase": "^11.0.2",
+    "pinia": "^2.2.8",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.4",
+    "quill": "^2.0.3",
+    "quill-delta-to-html": "^0.12.1",
+    "sockjs-client": "^1.6.1",
+    "vee-validate": "^4.14.7",
+    "vite-svg-loader": "^5.1.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-loading-overlay": "^6.0.6",
+    "vue-router": "^4.5.0",
+    "vue3-emoji-picker": "^1.1.8",
+    "webstomp-client": "^1.2.6",
+    "yup": "^1.5.0"
   },
   "devDependencies": {
+    "@primevue/auto-import-resolver": "^4.2.4",
     "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.0.1",
-    "vite-plugin-vue-devtools": "^7.6.5",
-    "vite-svg-loader": "^5.1.0"
+    "prettier": "^3.4.1",
+    "unplugin-vue-components": "^0.27.5",
+    "vite-plugin-vue-devtools": "^7.6.5"
   }
 }

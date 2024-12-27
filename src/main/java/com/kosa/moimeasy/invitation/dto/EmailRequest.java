@@ -7,5 +7,6 @@ import lombok.Setter;
 @Setter
 public class EmailRequest {
     private String email;
-    private String message; // 초대 메세지
+    private String message; 
+    private String htmlContent;
 }

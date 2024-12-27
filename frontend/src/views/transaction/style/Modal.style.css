@@ -1,0 +1,86 @@
+/* 모달 스타일 정의 */
+.number-buttons {
+  display: grid;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  /* 3개의 열로 배치 */
+  grid-template-columns: repeat(3, 1fr);
+  /* 버튼 사이의 간격 */
+  gap: 10px;
+  margin-top: 20px;
+  margin-left: 10px;
+  background-color: white;
+}
+
+.number-button {
+  width: 100px;
+  /* 버튼의 너비 */
+  height: 70px;
+  /* 버튼의 높이 */
+  background-color: white !important;
+  /* 버튼 배경색 */
+  color: black !important;
+  /* 버튼 텍스트 색상 */
+  font-size: 1.2em !important;
+  /* 텍스트 크기 */
+  border: none !important;
+  /* 테두리 제거 */
+  border-radius: 10px;
+  /* 둥근 모서리 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20px;
+}
+
+.number-button:hover {
+  background-color: #8b5cf6 !important;
+  /* 호버 시 색상 변경 */
+}
+
+.number-button:active {
+  background-color: #7e22ce !important;
+  /* 클릭 시 색상 변경 */
+}
+
+.next-button {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.text-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* 텍스트 가운데 정렬 */
+  font-size: 2em;
+  margin-top: 20px;
+  margin-left: 150px;
+  font-weight: bold;
+  color: lightgrey;
+}
+
+.text-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 20px;
+  /* 위아래 간격 */
+}
+
+.text-input {
+  font-size: 2rem !important;
+  /* 텍스트 크기 */
+  font-weight: bold;
+  /* 텍스트 굵게 */
+  text-align: center;
+  /* 텍스트 가운데 정렬 */
+  border: none !important;
+  /* 테두리 제거 */
+  outline: none !important;
+  /* 배경 투명 */
+  width: 100%;
+  /* 너비를 부모에 맞춤 */
+}
