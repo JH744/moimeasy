@@ -1,0 +1,173 @@
+.card {
+  /* Add any card-specific styles */
+}
+
+.upload-header-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column !important;
+  gap: 15px;
+}
+
+.seleted-file-box {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 310px;
+  overflow-y: auto;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-8 {
+  gap: 2rem;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.h-1 {
+  height: 0.25rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.pt-4 {
+  padding-top: 1rem;
+}
+
+.p-8 {
+  padding: 2rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
+}
+
+.max-w-60 {
+  max-width: 15rem;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.rounded-border {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-surface {
+  border-color: #e5e7eb;
+}
+
+.text-muted-color {
+  color: var(--text-color-secondary);
+}
+
+.border-2 {
+  border-width: 2px !important;
+}
+
+.rounded-full {
+  border-radius: 9999px !important;
+}
+
+.p-8 {
+  padding: 2rem !important;
+}
+
+.text-4xl {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+.text-muted-color {
+  color: var(--text-color-secondary) !important;
+}
+.progressbar-style {
+  width: 100%;
+  height: 10px;
+}
+
+@media (min-width: 768px) {
+  .md\:w-20rem {
+    width: 50rem;
+  }
+
+  .md\:ml-auto {
+    margin-left: auto;
+  }
+}
+
+.upload-logo {
+  border: 1px solid #e5e7eb;
+  border-width: 2px !important;
+  border-radius: 9999px !important;
+  padding: 2rem !important;
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+  color: #7e7e7f !important;
+}

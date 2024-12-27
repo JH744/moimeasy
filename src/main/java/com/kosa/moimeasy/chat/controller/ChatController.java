@@ -150,7 +150,7 @@ public class ChatController {
     }
 
     // 채팅방 나가기
-    @Operation(summary = "채팅방 탈주", description = "채팅방에서 탈주합니다.")
+    @Operation(summary = "채팅방 나가기", description = "채팅방에서 탈주합니다.")
     @ApiResponse(responseCode = "200", description = "채팅방 탈출 성공")
     @DeleteMapping("/room/{roomId}/leave")
     public ResponseEntity<String> leaveRoom(@PathVariable Long roomId, @AuthenticationPrincipal UserDetails userDetails) {

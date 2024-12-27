@@ -6,24 +6,49 @@
       <div class="title">{{ currentMonth }}</div>
       <!-- 가운데: 아이콘 그룹 -->
       <div class="icon-button-group">
-        <i class="pi pi-caret-left" style="font-size: 1rem" @click="updateMonth(-1)"></i>
+        <i
+          class="pi pi-caret-left"
+          style="font-size: 1rem"
+          @click="updateMonth(-1)"
+        ></i>
         <i class="pi pi-calendar-times" style="font-size: 1rem"></i>
-        <i class="pi pi-caret-right" style="font-size: 1rem" @click="updateMonth(1)"></i>
+        <i
+          class="pi pi-caret-right"
+          style="font-size: 1rem"
+          @click="updateMonth(1)"
+        ></i>
       </div>
       <!-- 회비 납부 모달 -->
-      <Button label="회비 납부" icon="pi pi-check" iconPos="right" rounded class="rimittance-button"
-        @click="remittance = true" />
+      <Button
+        label="회비 납부"
+        icon="pi pi-check"
+        iconPos="right"
+        rounded
+        class="rimittance-button"
+        @click="remittance = true"
+      />
       <RemittanceModal v-model:visible="remittance" />
 
       <!-- 계좌 입금 모달-->
-      <Button label="계좌 입금" icon="pi pi-paypal" iconPos="right" rounded class="deposit-button"
-        @click="deposit = true" />
+      <Button
+        label="계좌 입금"
+        icon="pi pi-paypal"
+        iconPos="right"
+        rounded
+        class="deposit-button"
+        @click="deposit = true"
+      />
       <UserDepositModal v-model:visible="deposit" />
     </div>
   </div>
   <div class="card">
     <template v-if="members && members.length">
-      <DataTable :value="members" paginator :rows="5" tableStyle="min-width: 60rem">
+      <DataTable
+        :value="members"
+        paginator
+        :rows="5"
+        tableStyle="min-width: 60rem"
+      >
         <!-- 번호 -->
         <Column field="number" header="번호" style="width: 12%" />
 
@@ -45,30 +70,33 @@
         <!-- 상태 -->
         <Column header="상태" style="width: 12%">
           <template #body="slotProps">
-            <Tag :severity="getSeverity(slotProps.data.status)" :value="slotProps.data.status" />
+            <Tag
+              :severity="getSeverity(slotProps.data.status)"
+              :value="slotProps.data.status"
+            />
           </template>
         </Column>
       </DataTable>
     </template>
-  </div>1
+  </div>
+  1
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted } from 'vue';
 import 'primeicons/primeicons.css';
 import '@/views/transaction/style/Transaction.style.css';
-import '@/views/transaction/style/Button.style.css';
+// import '@/views/transaction/style/Button.style.css';
 import '@/views/transaction/style/Tag.style.css';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
-import axios from "axios";
-import RemittanceModal from "./RemittanceModal.vue";
-import UserDepositModal from "./UserDepositModal.vue";
+import axios from 'axios';
+import RemittanceModal from './RemittanceModal.vue';
+import UserDepositModal from './UserDepositModal.vue';
 import { useRouter } from 'vue-router';
 import { useLoadingStore } from '@/stores/useLoadingStore';
 import Tag from 'primevue/tag';
-
 
 const router = useRouter();
 const loadingStore = useLoadingStore();
@@ -98,7 +126,6 @@ if (!accessToken || !moeimId) {
   router.push('/login'); // 로그인 화면으로 리디렉션
 }
 
-
 // 상태에 따른 severity 결정
 const getSeverity = (status) => {
   switch (status) {
@@ -112,10 +139,18 @@ const getSeverity = (status) => {
 // 송금 내역 가져오기
 async function fetchRemittanceList() {
   try {
-    loadingStore.startLoading();  // 로딩 시작
+    loadingStore.startLoading(); // 로딩 시작
     // 현재 월의 첫 번째 날짜과 마지막 날짜 계산
-    const startOfMonth = new Date(Date.UTC(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1));
-    const endOfMonth = new Date(Date.UTC(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 0));
+    const startOfMonth = new Date(
+      Date.UTC(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+    );
+    const endOfMonth = new Date(
+      Date.UTC(
+        currentDate.value.getFullYear(),
+        currentDate.value.getMonth() + 1,
+        0
+      )
+    );
 
     const response = await axios.get('/api/v1/transaction/remittance-list', {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -133,7 +168,8 @@ async function fetchRemittanceList() {
         userName: remittance.userName, // 이름
         amount: remittance.amount, // 금액
         transactionAt: remittance.transactionAt, // 납부일자
-        status: remittance.transactionType === 'REMITTANCE' ? '납부완료' : '회비미납', // 상태
+        status:
+          remittance.transactionType === 'REMITTANCE' ? '납부완료' : '회비미납', // 상태
         photo: remittance.photo || null, // 사진 (기본값 처리)
       }));
       console.log('송금 내역:', members.value);
@@ -142,10 +178,12 @@ async function fetchRemittanceList() {
       console.warn('송금 내역이 없습니다.');
     }
   } catch (error) {
-    console.error('송금 내역 조회 중 오류 발생:', error.response?.data || error.message);
+    console.error(
+      '송금 내역 조회 중 오류 발생:',
+      error.response?.data || error.message
+    );
     members.value = [];
-  }
-  finally {
+  } finally {
     loadingStore.stopLoading(); // 로딩 중지
   }
 }
@@ -163,7 +201,6 @@ onMounted(() => {
   currentMonth.value = `${date.getMonth() + 1}월 회비 납부내역`; // 초기 월 설정
   fetchRemittanceList();
 });
-
 </script>
 
 <style scoped></style>

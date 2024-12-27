@@ -52,32 +52,6 @@
           </div>
         </div>
       </div>
-
-      <!-- 사용자 정보 입력 필드 -->
-      <!-- <div class="form-group">
-        <label for="username">유저명</label>
-        <input id="username" v-model="user.userName" type="text" readonly />
-      </div>
-
-      <div class="form-group">
-        <label for="nickname">닉네임</label>
-        <input id="nickname" v-model="user.nickname" type="text" readonly />
-      </div>
-
-      <div class="form-group">
-        <label for="email">이메일</label>
-        <input id="email" v-model="user.email" type="email" readonly />
-      </div>
-
-      <div class="form-group">
-        <label for="phone">전화번호</label>
-        <input id="phone" v-model="user.phone" type="text" readonly />
-      </div>
-
-      <div class="form-group">
-        <label for="createAt">가입 날짜</label>
-        <input id="createAt" v-model="user.createAt" type="text" readonly />
-      </div> -->
     </form>
 
     <!-- 사용자 정보가 없는 경우 표시 -->

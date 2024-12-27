@@ -5,7 +5,7 @@
       <h1 class="title">MoeimEasy</h1>
       <p class="subtitle">쉽고 간편한 모임 관리를 시작하세요!</p>
       <button class="btn-primary" @click="goToLogin">시작하기</button><br />
-      <button class="btn-secondary" @click="toggleGuide">
+      <button class="btn-secondary" @click="toggleGuideModal">
         서비스 가이드 보기
       </button>
     </div>
@@ -25,28 +25,47 @@
       </div>
     </div>
 
-    <!-- 서비스 가이드 확장 영역 -->
-    <div v-if="isGuideVisible" class="guide-slider">
-      <div
-        class="guide-slide"
-        v-for="(guide, index) in guideImages"
-        :key="index"
-      >
-        <img :src="guide" alt="Guide Image" class="guide-image" />
-      </div>
-      <div class="guide-button-container">
-        <button class="btn-primary" @click="goToLogin">시작하기</button>
+    <!-- 서비스 가이드 모달 -->
+    <div v-if="isGuideModalVisible" class="guide-modal">
+      <div class="guide-modal-content">
+        <!-- Close Button -->
+        <button class="modal-close-btn" @click="toggleGuideModal">×</button>
+        <div class="modal-slider-container">
+          <div
+            class="modal-slider-wrapper"
+            :style="{ transform: `translateX(-${currentGuideIndex * 100}%)` }"
+          >
+            <div
+              class="modal-slider-image"
+              v-for="(guide, index) in guideImages"
+              :key="index"
+            >
+              <img :src="guide" alt="Guide Image" />
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <button
+            class="nav-btn prev-btn"
+            @click="prevGuideSlide"
+            :disabled="currentGuideIndex === 0"
+          >
+            ◀
+          </button>
+          <button
+            class="nav-btn next-btn"
+            @click="nextGuideSlide"
+            :disabled="currentGuideIndex === guideImages.length - 1"
+          >
+            ▶
+          </button>
+        </div>
+        <!-- Centered Start Button -->
+        <div class="guide-button-container">
+          <button class="btn-primary" @click="goToLogin">시작하기</button>
+        </div>
       </div>
     </div>
-
-    <!-- 맨 위로 가기 버튼 -->
-    <button
-      v-if="isScrollTopVisible"
-      class="scroll-top-btn"
-      @click="scrollToTop"
-    >
-      ↑
-    </button>
   </div>
 </template>
 
@@ -65,24 +84,24 @@ export default {
       ],
       guideImages: [
         '/guide/user.png',
-        '/intro/intro2.png',
-        '/intro/intro3.png',
+        '/guide/settlement.png',
+        '/guide/chat.png',
         '/intro/intro4.png',
         '/intro/intro5.png',
         '/intro/intro6.png',
         '/intro/intro7.png',
       ],
       currentImageIndex: 0,
-      isGuideVisible: false, // 가이드 표시 여부
-      isScrollTopVisible: false, // 맨 위로 버튼 표시 여부
+      currentGuideIndex: 0,
+      isGuideModalVisible: false, // 모달 표시 여부
     };
   },
   methods: {
     goToLogin() {
       this.$router.push('/login');
     },
-    toggleGuide() {
-      this.isGuideVisible = !this.isGuideVisible; // 가이드 보이기/숨기기 토글
+    toggleGuideModal() {
+      this.isGuideModalVisible = !this.isGuideModalVisible;
     },
     startSlider() {
       setInterval(() => {
@@ -90,26 +109,22 @@ export default {
           (this.currentImageIndex + 1) % this.images.length;
       }, 3000); // 3초 간격으로 이미지 변경
     },
-    scrollToTop() {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
+    prevGuideSlide() {
+      if (this.currentGuideIndex > 0) {
+        this.currentGuideIndex--;
+      }
     },
-    handleScroll() {
-      this.isScrollTopVisible = window.scrollY > 200; // 스크롤 위치에 따라 버튼 표시
+    nextGuideSlide() {
+      if (this.currentGuideIndex < this.guideImages.length - 1) {
+        this.currentGuideIndex++;
+      }
     },
   },
   mounted() {
     this.startSlider();
-    window.addEventListener('scroll', this.handleScroll);
-  },
-  beforeUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
   },
 };
 </script>
-
 <style scoped>
 /* 전체 컨테이너 */
 .home-container {
@@ -202,83 +217,143 @@ export default {
   flex-shrink: 0;
 }
 
-/* 서비스 가이드 슬라이더 */
-.guide-slider {
-  width: 100%;
-  max-width: 500px;
-  margin: 20px 0;
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-60%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1000;
 }
 
-.guide-slide {
-  width: 100%;
-  height: 300px;
-  margin-bottom: 20px;
+.nav-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
-.guide-image {
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+/* 모달 전체 스타일 */
+.guide-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-}
-
-.guide-button-container {
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
+}
+
+.guide-modal-content {
+  position: relative;
+  background: white;
+  width: 90%;
+  max-width: 800px;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Close Button */
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.modal-close-btn:hover {
+  color: #333;
+}
+
+/* 모달 내 슬라이더 */
+.modal-slider-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 400px;
   margin-top: 20px;
 }
 
-/* 맨 위로 가기 버튼 */
-.scroll-top-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  background-color: #7f56d9;
+.modal-slider-wrapper {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.modal-slider-image {
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.modal-slider-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 이미지 비율 유지 */
+}
+
+/* Navigation Buttons */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
+  padding: 10px;
   border-radius: 50%;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 20px;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.3s;
+  z-index: 1000;
 }
 
-.scroll-top-btn:hover {
+.nav-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+/* 시작하기 버튼 정렬 */
+.guide-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background-color: #7f56d9;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
   background-color: #6a48b0;
-}
-
-/* 반응형 */
-@media (max-width: 768px) {
-  .title {
-    font-size: 36px;
-  }
-
-  .subtitle {
-    font-size: 16px;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    font-size: 14px;
-  }
-
-  .slider-container {
-    max-width: 100%;
-    height: auto;
-    aspect-ratio: 5 / 3;
-  }
-
-  .guide-slide {
-    height: 200px;
-  }
-
-  .scroll-top-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
 }
 </style>

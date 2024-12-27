@@ -140,14 +140,6 @@
           class="receipt-image-large"
         />
       </div>
-      <template #footer>
-        <Button
-          label="닫기"
-          icon="pi pi-times"
-          class="p-button-text"
-          @click="closeDetailModal"
-        />
-      </template>
     </Dialog>
   </div>
 </template>

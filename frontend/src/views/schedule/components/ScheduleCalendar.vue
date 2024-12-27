@@ -148,7 +148,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import { fetchAddNotification } from '@/utils/notification-add-utils';
-import formatDateTime from '@/utils/\bdate-fomat-utile';
+import formatDateTime from '@/utils/date-fomat-utile';
 import ScheduleDialog from './ScheduleDialog.vue';
 
 // 구글 캘린더 API 설정

@@ -1,10 +1,6 @@
 <template>
   <div class="schedule-dialog-container">
-    <ConfirmDialog
-      group="positioned"
-      :modal="false"
-      style="background-color: 'red'"
-    >
+    <ConfirmDialog group="positioned" :modal="false">
       <template #message>
         <div class="modal-body">
           <p>
@@ -26,17 +22,4 @@ defineProps({
 });
 </script>
 
-<style>
-.schedule-dialog-container {
-  .p-dialog-header {
-    background-color: rgb(218, 150, 231);
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-  }
-
-  .modal-body {
-    padding: 20px;
-    background-color: aqua;
-  }
-}
-</style>
+<style></style>
