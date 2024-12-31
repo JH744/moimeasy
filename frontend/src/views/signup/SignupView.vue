@@ -1,6 +1,7 @@
 <template>
   <div class="card-container">
     <!-- 타이틀 -->
+    <h1 class="title2">MoeimEasy</h1>
     <div class="title">회원가입</div>
 
     <!-- 오류 메시지 표시 -->
@@ -399,6 +400,13 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
   background-color: #fff;
+}
+.title2 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #7f56d9;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 /* 타이틀 스타일 */

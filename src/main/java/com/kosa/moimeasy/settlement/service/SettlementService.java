@@ -6,6 +6,9 @@ import com.kosa.moimeasy.settlement.dto.SettlementDTO;
 import com.kosa.moimeasy.settlement.entity.Settlement;
 import com.kosa.moimeasy.settlement.entity.Settlement.SettlementStatus;
 import com.kosa.moimeasy.settlement.repository.SettlementRepository;
+import com.kosa.moimeasy.transaction.entity.Transaction;
+import com.kosa.moimeasy.transaction.repository.TransactionRepository;
+import com.kosa.moimeasy.transaction.type.TransactionType;
 import com.kosa.moimeasy.user.entity.User;
 import com.kosa.moimeasy.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -23,6 +26,7 @@ public class SettlementService {
     private final SettlementRepository settlementRepository;
     private final UserRepository userRepository;
     private final MoeimRepository moeimRepository;
+    private final TransactionRepository transactionRepository;
 
     /**
      * 모든 정산 요청 조회
@@ -34,7 +38,7 @@ public class SettlementService {
                 .map(settlement -> {
                     SettlementDTO dto = new SettlementDTO();
                     dto.setId(settlement.getId()); // ID 추가
-                    dto.setTitle(settlement.getTitle());
+                    dto.setCategoryName(settlement.getCategoryName());
                     dto.setUserName(settlement.getUser() != null ? settlement.getUser().getUserName() : "알 수 없는 사용자");
                     dto.setImageUrl(settlement.getImageUrl());
                     dto.setAmount(settlement.getAmount());
@@ -57,7 +61,7 @@ public class SettlementService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Settlement settlement = new Settlement(
-                requestDTO.getTitle(),
+                requestDTO.getCategoryName(),
                 requestDTO.getImageUrl(),
                 user,
                 requestDTO.getAmount()
@@ -95,6 +99,14 @@ public class SettlementService {
         settlementRepository.save(settlement);
         moeimRepository.save(moeim);
         userRepository.save(user);
+        transactionRepository.save(
+                Transaction.builder()
+                .moeimAccount(moeim)
+                .transactionType(TransactionType.WITHDRAW)
+                .amount(requestedAmount)
+                .withdrawName(user.getUserName())
+                .categoryName(settlement.getCategoryName())
+                .build());
     }
 
     /**

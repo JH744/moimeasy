@@ -1,0 +1,31 @@
+/* 기본 버튼 스타일 */
+.p-button-primary {
+  background-color: #7f56d9;
+  border-color: #7f56d9;
+}
+
+.p-button-primary:hover {
+  background-color: #6b49c1;
+}
+
+/* 아이콘 그룹 컨테이너 정렬 */
+.icon-button-group {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 아이콘 기본 스타일 및 호버 효과 */
+.icon-hover {
+  font-size: 1rem; /* 아이콘 크기 */
+  transition: transform 0.2s ease-in-out; /* 부드러운 호버 효과 */
+  cursor: pointer; /* 마우스 커서 */
+}
+
+.icon-hover:hover {
+  transform: scale(1.5); /* 마우스 호버 시 크기 확대 */
+}
+
+.button-group {
+  display: flex;
+}

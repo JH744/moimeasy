@@ -28,7 +28,6 @@
     <!-- 서비스 가이드 모달 -->
     <div v-if="isGuideModalVisible" class="guide-modal">
       <div class="guide-modal-content">
-        <!-- Close Button -->
         <button class="modal-close-btn" @click="toggleGuideModal">×</button>
         <div class="modal-slider-container">
           <div
@@ -40,11 +39,10 @@
               v-for="(guide, index) in guideImages"
               :key="index"
             >
-              <img :src="guide" alt="Guide Image" />
+              <img :src="guide.src" :alt="`Guide Image ${index + 1}`" />
+              <p class="image-caption">{{ guide.caption }}</p>
             </div>
           </div>
-
-          <!-- Navigation Buttons -->
           <button
             class="nav-btn prev-btn"
             @click="prevGuideSlide"
@@ -60,7 +58,6 @@
             ▶
           </button>
         </div>
-        <!-- Centered Start Button -->
         <div class="guide-button-container">
           <button class="btn-primary" @click="goToLogin">시작하기</button>
         </div>
@@ -74,23 +71,32 @@ export default {
   data() {
     return {
       images: [
-        '/intro/intro1.png',
-        '/intro/intro2.png',
-        '/intro/intro3.png',
-        '/intro/intro4.png',
-        '/intro/intro5.png',
-        '/intro/intro6.png',
-        '/intro/intro7.png',
-      ],
-      guideImages: [
-        '/guide/user.png',
+        '/guide/login.png',
+        '/guide/signup.png',
+        '/guide/moeim.png',
         '/guide/settlement.png',
         '/guide/chat.png',
-        '/intro/intro4.png',
-        '/intro/intro5.png',
-        '/intro/intro6.png',
-        '/intro/intro7.png',
+        '/guide/invitation.png',
+        '/guide/calendar.png',
+        '/guide/schedule.png',
+        '/guide/remittance.png',
+        '/guide/transaction.png',
+        '/guide/chart.png',
       ],
+      guideImages: [
+        { src: '/guide/login.png', caption: '로그인 화면' },
+        { src: '/guide/signup.png', caption: '회원가입 화면' },
+        { src: '/guide/moeim.png', caption: '모임 생성 및 가입 화면' },
+        { src: '/guide/settlement.png', caption: '정산 요청 화면' },
+        { src: '/guide/chat.png', caption: '모임 채팅 화면' },
+        { src: '/guide/invitation.png', caption: '초대 화면' },
+        { src: '/guide/calendar.png', caption: '캘린더 화면' },
+        { src: '/guide/schedule.png', caption: '일정 화면' },
+        { src: '/guide/remittance.png', caption: '송금 화면' },
+        { src: '/guide/transaction.png', caption: '거래 내역 화면' },
+        { src: '/guide/chart.png', caption: '통계 화면' },
+      ],
+
       currentImageIndex: 0,
       currentGuideIndex: 0,
       isGuideModalVisible: false, // 모달 표시 여부
@@ -107,7 +113,7 @@ export default {
       setInterval(() => {
         this.currentImageIndex =
           (this.currentImageIndex + 1) % this.images.length;
-      }, 3000); // 3초 간격으로 이미지 변경
+      }, 2000); // 3초 간격으로 이미지 변경
     },
     prevGuideSlide() {
       if (this.currentGuideIndex > 0) {
@@ -289,7 +295,7 @@ export default {
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 400px;
+  height: 450px;
   margin-top: 20px;
 }
 
@@ -299,14 +305,18 @@ export default {
 }
 
 .modal-slider-image {
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
+  align-items: center;
   width: 100%;
   height: 100%;
+  justify-content: flex-start;
 }
 
 .modal-slider-image img {
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 80%;
   object-fit: contain; /* 이미지 비율 유지 */
 }
 
@@ -337,11 +347,9 @@ export default {
   right: 10px;
 }
 
-/* 시작하기 버튼 정렬 */
 .guide-button-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
 }
 
 .btn-primary {
@@ -355,5 +363,11 @@ export default {
 
 .btn-primary:hover {
   background-color: #6a48b0;
+}
+.image-caption {
+  font-size: 16px;
+  color: #555; /* 조금 더 진한 색으로 가독성 향상 */
+  text-align: center;
+  margin-top: 10px; /* 이미지와의 간격을 줄임 */
 }
 </style>

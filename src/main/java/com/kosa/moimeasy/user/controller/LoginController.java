@@ -5,6 +5,8 @@ import com.kosa.moimeasy.security.provider.JwtTokenProvider;
 import com.kosa.moimeasy.user.dto.LoginDTO;
 import com.kosa.moimeasy.user.exception.LoginException;
 import com.kosa.moimeasy.user.service.LoginService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name="로그인 페이지" , description="Login API")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1")
@@ -31,7 +34,7 @@ public class LoginController {
         this.loginService = loginService;
         this.tokenProvider = tokenProvider;
     }
-
+    @Operation(summary = "로그인 접속" ,description ="로그인" )
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         try{
@@ -70,6 +73,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 중 오류가 발생했습니다.");
         }
     }
+    @Operation(summary = "로그아웃" ,description ="로그아웃" )
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         try {
@@ -107,7 +111,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 중 오류가 발생했습니다.");
         }
     }
-
+    @Operation(summary = "리플래쉬&엑세스 토큰" ,description ="리플래쉬&엑세스 토큰 생성&삭제" )
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = null;

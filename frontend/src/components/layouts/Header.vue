@@ -51,18 +51,23 @@
           </OverlayBadge>
         </div>
         <!-- 유저 프로필 영역 -->
-        <div class="profile-box">
+        <div class="profile-box" @click="toggle">
           <Avatar
             :image="profileImage ? profileImage : defaultAvatar"
             class="profile-avatar"
             size="large"
             shape="circle"
-            @click="toggle"
           />
           <p>{{ nickName }}</p>
           <!-- 프로필이미지 클릭시 드롭다운 메뉴 -->
           <div class="tiered-menu-box">
-            <TieredMenu ref="menu" id="overlay_tmenu" :model="menus" popup />
+            <TieredMenu
+              ref="menu"
+              id="overlay_tmenu"
+              :model="menus"
+              popup
+              style="margin-left: 20px"
+            />
           </div>
           <!--유저 프로필 모달  -->
           <div class="profole-modal-box">
@@ -337,5 +342,8 @@ const toggle = (event) => {
 }
 
 .profole-modal-box {
+}
+
+.tiered-menu-box {
 }
 </style>

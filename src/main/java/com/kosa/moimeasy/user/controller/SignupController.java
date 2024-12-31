@@ -5,6 +5,8 @@ import com.kosa.moimeasy.user.exception.DuplicateEmailException;
 import com.kosa.moimeasy.user.exception.DuplicateNicknameException;
 import com.kosa.moimeasy.user.exception.SignupException;
 import com.kosa.moimeasy.user.service.SignUpService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,7 @@ import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
-
+@Tag(name="회원가입 페이지" , description="SignUp API")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/signup")
@@ -30,6 +32,7 @@ public class SignupController {
     }
 
     // 회원가입 요청
+    @Operation(summary = "회원가입" ,description ="회원가입" )
     @PostMapping
     public ResponseEntity signup(@Valid @RequestBody SignupDTO dto, BindingResult bindingResult) {
         log.info("Request Data: {}", dto);
@@ -63,6 +66,7 @@ public class SignupController {
     }
 
     // 이메일 중복 검사
+    @Operation(summary = "이메일 유효성검사" ,description ="이메일 중복 검사" )
     @GetMapping("/check-email")
     public ResponseEntity<?> checkEmail(@RequestParam("email") String email) {
         boolean exists = signUpService.isEmailExists(email);
@@ -72,6 +76,7 @@ public class SignupController {
     }
 
     // 닉네임 중복 검사
+    @Operation(summary = "닉네임 유효성검사" ,description ="닉네임 중복 검사" )
     @GetMapping("/check-nickname")
     public ResponseEntity<?>
     checkNickname(@RequestParam("nickname") String nickname) {

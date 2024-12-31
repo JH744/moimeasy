@@ -231,9 +231,15 @@ export default {
         );
 
         if (response.data.length > 0) {
-          messages.value.push(...response.data);
-          lastMessageId.value = response.data[response.data.length - 1].id;
-          scrollToBottom();
+          const newMessages = response.data.filter(
+            (message) => !messages.value.some((m) => m.id === message.id)
+          );
+          messages.value.push(...newMessages);
+
+          if (newMessages.length > 0) {
+            lastMessageId.value = newMessages[newMessages.length - 1].id;
+            scrollToBottom();
+          }
         }
       } catch (error) {
         console.error('Error fetching messages:', error);
@@ -345,7 +351,7 @@ export default {
 .chat-messages {
   flex: 1;
   overflow: auto;
-  padding: 20px;
+  padding: 10px;
   background-color: #f0f0f0;
 }
 

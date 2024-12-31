@@ -18,7 +18,7 @@ public class Settlement extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
+    private String categoryName;
     private String imageUrl;
 
     @ManyToOne
@@ -35,8 +35,8 @@ public class Settlement extends BaseTimeEntity {
     public Settlement() {
     }
 
-    public Settlement(String title, String imageUrl, User user, double amount) {
-        this.title = title;
+    public Settlement(String categoryName, String imageUrl, User user, double amount) {
+        this.categoryName = categoryName;
         this.imageUrl = imageUrl;
         this.user = user;
         this.amount = amount;

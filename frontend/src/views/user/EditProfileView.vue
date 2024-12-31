@@ -1,176 +1,192 @@
 <template>
-    <div class="card-container">
-      <!-- 타이틀 -->
-      <div class="title">회원 정보 수정</div>
-  
-      <!-- 오류 메시지 표시 -->
-      <div v-if="errorMessage" class="result error">
-        {{ errorMessage }}
-      </div>
-  
-      <!-- 성공 메시지 표시 -->
-      <div v-if="successMessage" class="result success">
-        {{ successMessage }}
-      </div>
-  
-      <!-- 입력 폼 -->
-      <form v-if="user" @submit.prevent="updateUserInfo" class="form">
-        <!-- 닉네임 -->
-        <div class="input-container">
-          <label for="nickname">닉네임</label>
-          <input
-            type="text"
-            id="nickname"
-            v-model="nickname"
-            placeholder="닉네임을 입력해 주세요"
-            required
-          />
-          <button
-            type="button"
-            class="check-button"
-            @click="checkNickname"
-            :disabled="isNicknameChecked || isLoading"
-          >
-            닉네임 중복 확인
-          </button>
-          <div :class="feedbackNicknameClass">{{ feedbackNickname }}</div>
-        </div>
-  
-        <!-- 전화번호 -->
-        <div class="input-container">
-          <label for="phone">전화번호</label>
-          <input
-            type="tel"
-            id="phone"
-            v-model="user.phone"
-            placeholder="전화번호를 입력해 주세요"
-            required
-          />
-        </div>
-  
-        <!-- 현재 비밀번호 -->
-        <div class="input-container">
-          <label for="currentPassword">현재 비밀번호</label>
-          <input
-            type="password"
-            id="currentPassword"
-            v-model="password.currentPassword"
-            placeholder="현재 비밀번호를 입력해 주세요"
-            required
-          />
-        </div>
-  
-        <!-- 제출 버튼 -->
-        <div class="submit-button">
-          <button type="submit" :disabled="!isFormValid || isLoading">
-            <span v-if="isLoading">처리 중...</span>
-            <span v-else>회원 정보 수정</span>
-          </button>
-        </div>
-      </form>
-  
-      <!-- 사용자 정보를 로드 중일 때 -->
-      <div v-else>사용자 정보를 불러오는 중입니다...</div>
+  <div class="card-container">
+    <!-- 타이틀 -->
+    <div class="title">회원 정보 수정</div>
+
+    <!-- 오류 메시지 표시 -->
+    <div v-if="errorMessage" class="result error">
+      {{ errorMessage }}
     </div>
-  </template>
-  
-  <script>
-  import { useToast } from 'primevue/usetoast';
-  import axios from '@/axios';
-  
-  export default {
-    data() {
-      return {
-        user: null,
-        nickname: '',
-        password: { currentPassword: '' },
-        feedbackNickname: '',
-        feedbackNicknameClass: '',
-        errorMessage: '',
-        successMessage: '',
-        isLoading: false,
-        isNicknameChecked: false,
-      };
+
+    <!-- 성공 메시지 표시 -->
+    <div v-if="successMessage" class="result success">
+      {{ successMessage }}
+    </div>
+
+    <!-- 입력 폼 -->
+    <form v-if="user" @submit.prevent="updateUserInfo" class="form">
+      <!-- 닉네임 -->
+      <div class="input-container">
+        <label for="nickname">닉네임</label>
+        <input
+          type="text"
+          id="nickname"
+          v-model="nickname"
+          placeholder="닉네임을 입력해 주세요"
+          required
+        />
+        <button
+          type="button"
+          class="check-button"
+          @click="checkNickname"
+          :disabled="isNicknameChecked || isLoading"
+        >
+          닉네임 중복 확인
+        </button>
+        <div :class="feedbackNicknameClass">{{ feedbackNickname }}</div>
+      </div>
+
+      <!-- 전화번호 -->
+      <div class="input-container">
+        <label for="phone">전화번호</label>
+        <input
+          type="tel"
+          id="phone"
+          v-model="phone"
+          placeholder="전화번호를 입력해 주세요"
+          required
+        />
+        <div v-if="!isPhoneValid" class="feedback-message error">
+          유효한 전화번호 형식이 아닙니다.
+        </div>
+      </div>
+
+      <!-- 현재 비밀번호 -->
+      <div class="input-container">
+        <label for="currentPassword">현재 비밀번호</label>
+        <input
+          type="password"
+          id="currentPassword"
+          v-model="password.currentPassword"
+          placeholder="현재 비밀번호를 입력해 주세요"
+          required
+        />
+      </div>
+
+      <!-- 제출 버튼 -->
+      <div class="submit-button">
+        <button type="submit" :disabled="!isFormValid || isLoading">
+          <span v-if="isLoading">처리 중...</span>
+          <span v-else>회원 정보 수정</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- 사용자 정보를 로드 중일 때 -->
+    <div v-else>사용자 정보를 불러오는 중입니다...</div>
+  </div>
+</template>
+
+<script>
+import { useToast } from "primevue/usetoast";
+import axios from "@/axios";
+
+export default {
+  data() {
+    return {
+      user: null,
+      nickname: "",
+      phone: "",
+      password: { currentPassword: "" },
+      feedbackNickname: "",
+      feedbackNicknameClass: "",
+      errorMessage: "",
+      successMessage: "",
+      isLoading: false,
+      isNicknameChecked: false,
+    };
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.isNicknameChecked &&
+        this.password.currentPassword.length > 0 &&
+        this.isPhoneValid
+      );
     },
-    computed: {
-      isFormValid() {
-        return (
-          this.isNicknameChecked &&
-          this.password.currentPassword.length > 0
+    isPhoneValid() {
+      // 정규식을 사용해 전화번호 형식 확인 (하이픈 포함 허용)
+      const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+      return phoneRegex.test(this.phone);
+    },
+  },
+  mounted() {
+    const userId = this.$route.params.userId;
+    this.loadUserData(userId);
+  },
+  methods: {
+    async loadUserData(userId) {
+      try {
+        const response = await axios.get(`/api/v1/users/${userId}`);
+        this.user = response.data;
+        this.nickname = response.data.nickname;
+        this.phone = response.data.phone; // 전화번호 초기값
+      } catch (error) {
+        console.error("사용자 정보를 불러오는 중 오류 발생:", error);
+        this.errorMessage = "사용자 정보를 불러오는 중 오류가 발생했습니다.";
+      }
+    },
+    async checkNickname() {
+      const nickname = this.nickname.trim();
+      if (nickname === "") {
+        this.feedbackNicknameClass = "feedback-message error";
+        this.feedbackNickname = "닉네임을 입력해 주세요.";
+        this.isNicknameChecked = false;
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `/api/v1/users/check-editnickname?nickname=${nickname}`
         );
-      },
-    },
-    mounted() {
-      const userId = this.$route.params.userId;
-      this.loadUserData(userId);
-    },
-    methods: {
-      async loadUserData(userId) {
-        try {
-          const response = await axios.get(`/api/v1/users/${userId}`);
-          this.user = response.data;
-          this.nickname = response.data.nickname;
-        } catch (error) {
-          console.error('사용자 정보를 불러오는 중 오류 발생:', error);
-          this.errorMessage = '사용자 정보를 불러오는 중 오류가 발생했습니다.';
-        }
-      },
-      async checkNickname() {
-        const nickname = this.nickname.trim();
-        if (nickname === '') {
-          this.feedbackNicknameClass = 'feedback-message error';
-          this.feedbackNickname = '닉네임을 입력해 주세요.';
+        const data = response.data;
+
+        if (data.exists) {
+          this.feedbackNicknameClass = "feedback-message error";
+          this.feedbackNickname = "이미 사용 중인 닉네임입니다.";
           this.isNicknameChecked = false;
-          return;
+        } else {
+          this.feedbackNicknameClass = "feedback-message success";
+          this.feedbackNickname = "사용 가능한 닉네임입니다.";
+          this.isNicknameChecked = true;
         }
-  
-        try {
-          const response = await axios.get(
-            `/api/v1/users/check-editnickname?nickname=${nickname}`
-          );
-          const data = response.data;
-  
-          if (data.exists) {
-            this.feedbackNicknameClass = 'feedback-message error';
-            this.feedbackNickname = '이미 사용 중인 닉네임입니다.';
-            this.isNicknameChecked = false;
-          } else {
-            this.feedbackNicknameClass = 'feedback-message success';
-            this.feedbackNickname = '사용 가능한 닉네임입니다.';
-            this.isNicknameChecked = true;
-          }
-        } catch (error) {
-          this.feedbackNicknameClass = 'feedback-message error';
-          this.feedbackNickname = '닉네임 중복 확인 중 오류가 발생했습니다.';
-          this.isNicknameChecked = false;
-        }
-      },
-      async updateUserInfo() {
-        if (!this.password.currentPassword) {
-          this.errorMessage = '현재 비밀번호를 입력해 주세요.';
-          return;
-        }
-  
-        this.isLoading = true;
-  
-        const payload = {
-          currentPassword: this.password.currentPassword,
-          nickname: this.nickname,
-          phone: this.user ? this.user.phone : '',
-        };
-  
-        try {
-          await axios.put(`/api/v1/users/update`, payload);
-          this.successMessage = '회원 정보가 성공적으로 수정되었습니다.';
-        } catch (error) {
-          this.errorMessage = '회원 정보 수정 중 오류가 발생했습니다.';
-        } finally {
-          this.isLoading = false;
-        }
-      },
+      } catch (error) {
+        this.feedbackNicknameClass = "feedback-message error";
+        this.feedbackNickname = "닉네임 중복 확인 중 오류가 발생했습니다.";
+        this.isNicknameChecked = false;
+      }
     },
-  };
-  </script>
+    async updateUserInfo() {
+      if (!this.password.currentPassword) {
+        this.errorMessage = "현재 비밀번호를 입력해 주세요.";
+        return;
+      }
+
+      if (!this.isPhoneValid) {
+        this.errorMessage = "전화번호 형식을 확인해 주세요.";
+        return;
+      }
+
+      this.isLoading = true;
+
+      const payload = {
+        currentPassword: this.password.currentPassword,
+        nickname: this.nickname,
+        phone: this.phone, // 하이픈 포함된 전화번호 전달
+      };
+
+      try {
+        await axios.put(`/api/v1/users/update`, payload);
+        this.successMessage = "회원 정보가 성공적으로 수정되었습니다.";
+      } catch (error) {
+        this.errorMessage = "회원 정보 수정 중 오류가 발생했습니다.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
+};
+</script>
   
 
   <style scoped>

@@ -11,19 +11,36 @@
         <PanelMenu :model="items" class="pannel-item">
           <template #item="{ item }">
             <!-- 대쉬보드 메뉴 -->
-            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+            <router-link
+              v-if="item.route"
+              v-slot="{ href, navigate }"
+              :to="item.route"
+              custom
+            >
               <a v-ripple class="dropmenu-item" :href="href" @click="navigate">
                 <img class="icon-dashboard" :src="item.icon" width="15px" />
                 <span class="menu-title">{{ item.label }}</span>
               </a>
             </router-link>
             <!-- 로그아웃 및 기타 -->
-            <a v-else-if="item.command" v-ripple class="dropmenu-item" href="#" @click.prevent="item.command">
+            <a
+              v-else-if="item.command"
+              v-ripple
+              class="dropmenu-item"
+              href="#"
+              @click.prevent="item.command"
+            >
               <img class="icon-dashboard" :src="item.icon" width="15px" />
               <span class="menu-title">{{ item.label }}</span>
             </a>
             <!-- 기타 메뉴 -->
-            <a v-else v-ripple class="dropmenu-item" :href="item.url" :target="item.target">
+            <a
+              v-else
+              v-ripple
+              class="dropmenu-item"
+              :href="item.url"
+              :target="item.target"
+            >
               <img class="icon-dashboard" :src="item.icon" width="15px" />
               <span class="menu-title">{{ item.label }}</span>
             </a>
@@ -45,6 +62,8 @@ import { ref } from 'vue';
 import NavLogo from './NavLogo.vue';
 import ChatIcon from '@/assets/icons/chatIcon.svg?url';
 import albumIcon from '@/assets/icons/albumIcon.svg?url';
+import AddressIcon from '@/assets/icons/AddressIcon.svg?url';
+import UserPlusIcon from '@/assets/icons/userPlusIcon.svg?url';
 
 //사이드바 메뉴구성 아이템
 const items = ref([
@@ -55,7 +74,7 @@ const items = ref([
   },
   {
     label: '회원관리',
-    icon: UsersIcon,
+    icon: AddressIcon,
     items: [
       {
         label: '회원조회',
@@ -64,7 +83,7 @@ const items = ref([
       },
       {
         label: '초대목록',
-        icon: UsersIcon,
+        icon: UserPlusIcon,
         route: '/invitation-list',
       },
     ],
@@ -452,7 +471,6 @@ const items = ref([
 }
 
 @media (min-width: 768px) {
-
   /* md 브레이크포인트: 768px 이상 */
   .pannel-item {
     width: 13rem;

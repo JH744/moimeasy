@@ -7,7 +7,9 @@ import svgLoader from 'vite-svg-loader';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools(), svgLoader()],
-
+  optimizeDeps: {
+    include: ['mermaid'], // Mermaid.js를 명시적으로 포함
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

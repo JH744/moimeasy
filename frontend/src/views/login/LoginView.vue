@@ -68,7 +68,7 @@ export default {
         return;
       }
       try {
-         // Auth Store의 login() 으로 백엔드 /login API 호출
+        // Auth Store의 login() 으로 백엔드 /login API 호출
         await this.authStore.login(this.form.email, this.form.password);
 
         // 로그인 성공 시 Toast 알림
@@ -94,7 +94,7 @@ export default {
         let detailMessage = '로그인을 실패했습니다.';
 
         if (error.response && error.response.data) {
-          const serverMessage = error.response.data; 
+          const serverMessage = error.response.data;
           // 백엔드에서 body(e.getMessage())로 문자열만 넘기므로, 그대로 사용
           if (serverMessage === '가입되지 않은 아이디입니다.') {
             detailMessage = '가입되지 않은 아이디입니다.';

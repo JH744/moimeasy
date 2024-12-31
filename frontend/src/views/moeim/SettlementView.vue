@@ -17,10 +17,10 @@
       class="p-datatable-striped"
       responsiveLayout="scroll"
     >
-      <Column field="title" header="제목">
+      <Column field="categoryName" header="제목">
         <template #body="slotProps">
           <span class="clickable-text" @click="openDetailModal(slotProps.data)">
-            {{ slotProps.data.title }}
+            {{ slotProps.data.categoryName }}
           </span>
         </template>
       </Column>
@@ -77,12 +77,14 @@
     >
       <div class="form">
         <div class="p-field">
-          <label for="title">제목</label>
-          <InputText
-            id="title"
-            v-model="title"
-            placeholder="제목을 입력하세요"
-            class="p-inputtext"
+          <label for="categoryName">제목</label><br />
+          <Select
+            id="categoryName"
+            v-model="categoryName"
+            :options="categoryOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="카테고리를 선택하세요"
           />
         </div>
         <div class="p-field">
@@ -131,7 +133,7 @@
       modal
     >
       <div class="detail-view">
-        <h3><strong>제목:</strong>{{ selectedRequest.title }}</h3>
+        <h3><strong>제목:</strong>{{ selectedRequest.categoryName }}</h3>
         <p><strong>작성자:</strong> {{ selectedRequest.userName }}</p>
         <p><strong>날짜:</strong> {{ selectedRequest.createdAt }}</p>
         <img
@@ -140,6 +142,25 @@
           class="receipt-image-large"
         />
       </div>
+    </Dialog>
+
+    <!-- 요청 승인 모달 -->
+    <Dialog
+      header="알림"
+      v-model:visible="isApprovalModalVisible"
+      :style="{ width: '30vw' }"
+      modal
+      closable="false"
+    >
+      <p>정산 요청이 승인되었습니다.</p>
+      <template #footer>
+        <Button
+          label="확인"
+          icon="pi pi-check"
+          class="p-button-primary"
+          @click="closeApprovalModal"
+        />
+      </template>
     </Dialog>
   </div>
 </template>
@@ -160,6 +181,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import FileUpload from 'primevue/fileupload';
+import Select from 'primevue/select';
 
 export default {
   components: {
@@ -169,19 +191,30 @@ export default {
     Button,
     InputText,
     FileUpload,
+    Select,
   },
   setup() {
     const settlementRequests = ref([]);
     const isModalVisible = ref(false);
     const isDetailModalVisible = ref(false);
     const selectedRequest = ref({});
-    const title = ref('');
+    const categoryName = ref(null);
     const amount = ref('');
     const imageUrl = ref('');
     const selectedFile = ref(null); // 선택된 파일
     const isSubmitDisabled = ref(true);
     const authStore = useAuthStore();
     const isAdmin = ref(authStore.user?.roleId === 1);
+
+    const isApprovalModalVisible = ref(false);
+
+    const categoryOptions = ref([
+      { label: '식비', value: '식비' },
+      { label: '음료', value: '음료' },
+      { label: '운영비', value: '운영비' },
+      { label: '시설대여', value: '시설대여' },
+      { label: '기타', value: '기타' },
+    ]);
 
     // 요청 상태에 따른 라벨 반환
     const getStatusLabel = (status) => {
@@ -209,12 +242,15 @@ export default {
         await axios.post(`/api/v1/settlements/approve/${requestId}`, null, {
           headers: { Authorization: `Bearer ${authStore.accessToken}` },
         });
-        alert('정산 요청이 승인되었습니다.');
+        isApprovalModalVisible.value = true;
         await fetchRequests();
       } catch (error) {
         console.error('Error approving request:', error);
         alert('정산 요청 승인 중 오류가 발생했습니다.');
       }
+    };
+    const closeApprovalModal = () => {
+      isApprovalModalVisible.value = false;
     };
 
     // 날짜 포맷 함수
@@ -247,8 +283,9 @@ export default {
     };
 
     // 제출 버튼 활성화 상태 감지
-    watch([title, amount, imageUrl], () => {
-      isSubmitDisabled.value = !title.value || !amount.value || !imageUrl.value;
+    watch([categoryName, amount, imageUrl], () => {
+      isSubmitDisabled.value =
+        !categoryName.value || !amount.value || !imageUrl.value;
     });
 
     // 정산 요청 제출
@@ -257,7 +294,7 @@ export default {
 
       try {
         const payload = {
-          title: title.value,
+          categoryName: categoryName.value,
           amount: parseFloat(amount.value),
           imageUrl: imageUrl.value, // Firebase URL 전송
         };
@@ -281,7 +318,7 @@ export default {
 
     const closeModal = () => {
       isModalVisible.value = false;
-      title.value = '';
+      categoryName.value = '';
       amount.value = '';
       imageUrl.value = '';
       selectedFile.value = null;
@@ -317,7 +354,7 @@ export default {
       settlementRequests,
       isModalVisible,
       isDetailModalVisible,
-      title,
+      categoryName,
       amount,
       imageUrl,
       selectedFile,
@@ -334,6 +371,9 @@ export default {
       getStatusLabel,
       fetchRequests,
       approveRequest,
+      categoryOptions,
+      isApprovalModalVisible,
+      closeApprovalModal,
     };
   },
 };
@@ -414,15 +454,19 @@ label {
 .p-button-primary:hover {
   background-color: #6b49c1;
 }
+
 .status-pending {
   color: orange;
 }
+
 .status-accepted {
   color: green;
 }
+
 .status-rejected {
   color: red;
 }
+
 .custom-file-input {
   position: absolute;
   z-index: -1;

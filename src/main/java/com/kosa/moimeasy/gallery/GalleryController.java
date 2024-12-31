@@ -1,9 +1,10 @@
 package com.kosa.moimeasy.gallery;
 
+import com.kosa.moimeasy.gallery.dto.GalleryResponseDto;
 import com.kosa.moimeasy.gallery.dto.GalleryUploadRequest;
 import com.kosa.moimeasy.gallery.dto.UploadFileInfo;
-import lombok.Builder;
-import lombok.Data;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,19 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Tag(name="모임 갤러리 페이지" , description="Gallery API")
 @RestController
 @RequestMapping("/api/v1/gallery")
 @RequiredArgsConstructor
 public class GalleryController {
     private final GalleryService galleryService;
 
-    // 갤러리 목록 조회
-//    @GetMapping
-//    public Page<Gallery> getGalleries(Long moeimId,Pageable pageable) {
-//        return galleryService.getGalleryList(moeimId, pageable);
-//    }
 
+    @Operation(summary = "갤러리 조회" ,description ="모임 갤러리 조회하기" )
     @GetMapping
     public ResponseEntity<Page<GalleryResponseDto>> getGalleryList(
             @RequestParam Long moeimId,
@@ -45,17 +42,11 @@ public class GalleryController {
         return ResponseEntity.ok(response);
     }
 
-    // 갤러리 이미지 저장
+    @Operation(summary = "갤러리 사진 업로드" ,description ="모임 사진 추가하기" )
     @PostMapping
     public List<Gallery> uploadImagesByUrl(@RequestBody GalleryUploadRequest request) {
         Long moeimId = request.getMoeimId();
         List<UploadFileInfo> files = request.getFiles();
         return galleryService.saveImageUrls(moeimId, files);
     }
-}
-@Data
-@Builder
-class GalleryResponseDto {
-    private Long id;
-    private String imageUrl;
 }

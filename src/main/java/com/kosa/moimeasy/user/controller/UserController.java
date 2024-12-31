@@ -6,6 +6,8 @@ import com.kosa.moimeasy.user.entity.User;
 import com.kosa.moimeasy.user.service.RoleService;
 import com.kosa.moimeasy.user.service.SignUpService;
 import com.kosa.moimeasy.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +21,7 @@ import com.kosa.moimeasy.common.exception.ResourceNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+@Tag(name="회원정보 수정 페이지" , description="EditProfile API")
 @RestController
 @RequestMapping("/api/v1/users")
 @CrossOrigin(origins = {"http://192.168.5.49:3000"})
@@ -58,6 +60,7 @@ public class UserController {
         return userService.createUser(request, role);
     }
     //요청한 정보만 수정가능
+    @Operation(summary = "회원정보 수정" ,description ="회원정보 수정가능" )
     @PutMapping("/update")
     public ResponseEntity<?> updateUser(@AuthenticationPrincipal UserDetails userDetails,
                                         @RequestBody UserDTO request) {
@@ -90,6 +93,7 @@ public class UserController {
 
 
     //프로필이미지 수정
+    @Operation(summary = "프로필이미지 수정" ,description ="프로필이미지 수정 가능" )
     @PutMapping("/update/{userId}")
     public User updateProfileImageUser(@PathVariable Long userId, @RequestBody UserDTO request) {
         System.out.println("전달된 데이터 "+userId+" 프로필: "+request.getProfileImage());
@@ -97,6 +101,7 @@ public class UserController {
     }
 
     // 닉네임 중복 검사
+    @Operation(summary = "닉네임 유효성검사" ,description ="닉네임 중복 검사" )
     @GetMapping("/check-editnickname")
     public ResponseEntity<?> checkNickname(@RequestParam("nickname") String nickname) {
         boolean exists = signUpService.isNicknameExists(nickname);
@@ -107,6 +112,7 @@ public class UserController {
 
 
     //회원 조회
+    @Operation(summary = "회원 조회" ,description ="회원정보 수정 시 조회" )
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
         User user = userService.findById(userId)

@@ -84,3 +84,17 @@
   width: 100%;
   /* 너비를 부모에 맞춤 */
 }
+
+.modal-result {
+  text-align: center;
+  font-size: 3em;
+  margin: auto;
+  margin-top: 50px;
+  font-weight: bold;
+  color: #7f56d9;
+}
+
+.modal-result > i {
+  font-size: 8rem;
+  margin-bottom: 30px;
+}

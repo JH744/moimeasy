@@ -29,9 +29,24 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/signup', name: 'Signup', component: Signup },
-  { path: '/moeim-select', name: 'MoeimSelect', component: MoeimSelect },
-  { path: '/create-moeim', name: 'CreateMoeim', component: CreateMoeim },
-  { path: '/enter-moeim', name: 'EnterMoeim', component: EnterMoeim },
+  {
+    path: '/moeim-select',
+    name: 'MoeimSelect',
+    component: MoeimSelect,
+    meta: { hideLayout: true },
+  },
+  {
+    path: '/create-moeim',
+    name: 'CreateMoeim',
+    component: CreateMoeim,
+    meta: { hideLayout: true },
+  },
+  {
+    path: '/enter-moeim',
+    name: 'EnterMoeim',
+    component: EnterMoeim,
+    meta: { hideLayout: true },
+  },
   { path: '/user-manage', name: '회원관리', component: UserManage },
   { path: '/find-email', name: 'FindEmail', component: FindEmailView },
   { path: '/finduser', name: 'FindUserInfo', component: FindUserInfoView },
@@ -72,9 +87,10 @@ const routes = [
         name: '거래내역',
         component: TransactionList,
       },
+      { path: '/settlement', name: '정산요청', component: Settlement },
     ],
   },
-  { path: '/category', name: '카테고리별 소비내역', component: Category },
+  { path: '/category', name: '카테고리별 지출 내용', component: Category },
   { path: '/chat', name: 'WebSocket', component: WebSocket },
   { path: '/chat-room-list', name: '채팅목록', component: ChatRoomList },
   {
@@ -142,7 +158,6 @@ const routes = [
     name: '채팅',
     component: () => import('@/views/chat/ChatLayoutView.vue'),
   },
-  { path: '/settlement', name: '정산요청', component: Settlement },
   {
     path: '/main',
     name: '메인',
@@ -180,6 +195,7 @@ router.beforeEach((to, from, next) => {
     '/find-email',
     '/finduser',
     '/resetpassword',
+    '/'
   ];
   const requiresAuth = !publicPages.includes(to.path); // 인증이 필요한 페이지
 

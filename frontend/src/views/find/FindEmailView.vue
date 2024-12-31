@@ -1,6 +1,7 @@
 <template>
   <Card class="card-container">
     <template #title>
+      <h1 class="title2">MoeimEasy</h1>
       <div class="title">아이디 찾기</div>
     </template>
     <template #content>
@@ -38,8 +39,9 @@
             :loading="loading"
           />
           <p class="footer-text">
-      로그인 페이지로 가시겠습니까? <a href="#" @click.prevent="goToLogin">Log in</a>
-    </p>
+            로그인 페이지로 가시겠습니까?
+            <a href="#" @click.prevent="goToLogin">Log in</a>
+          </p>
         </div>
       </form>
 
@@ -57,9 +59,8 @@
   </Card>
 </template>
 
-  
-  <script>
-  import api from '@/axios';
+<script>
+import api from '@/axios';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -104,10 +105,9 @@ export default defineComponent({
     return { nickname, phone, email, error, loading, submitForm, goToLogin };
   },
 });
+</script>
 
-  </script>
-  
-  <style scoped>
+<style scoped>
 .card-container {
   width: 400px;
   border: 1px solid #ddd; /* 테두리 색상 */
@@ -118,9 +118,17 @@ export default defineComponent({
   padding: 20px; /* 내부 여백 */
   background-color: #fff; /* 배경색 */
 }
+.title2 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #7f56d9;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
 .title {
   font-size: 1.3rem;
+  color: #414651;
   font-weight: bold;
   text-align: center;
   margin-bottom: 1.5rem;
@@ -173,7 +181,8 @@ export default defineComponent({
   background-color: #6c38cc;
 }
 
-.result, .error {
+.result,
+.error {
   margin-top: 1rem;
 }
 
@@ -192,5 +201,4 @@ export default defineComponent({
 .footer-text a:hover {
   text-decoration: underline;
 }
-  </style>
-  
+</style>

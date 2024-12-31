@@ -35,9 +35,6 @@
   margin: 0 auto;
 }
 
-/* 헤더 툴바 */
-.fc-header-toolbar {
-}
 /* 헤더 좌측  */
 .fc-toolbar-chunk:nth-of-type(1) {
   width: 170px;
@@ -120,13 +117,25 @@
   height: 30px;
   font-weight: 500;
 }
+/* 테이블 헤더 셀 끝*/
+
 /* 날짜 패딩효과 */
 .fc-daygrid-day-number {
-  padding: 10px !important;
+  padding: 8px !important;
+  margin: 0;
 }
 .fc-theme-standard .fc-scrollgrid {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+}
+
+/* 캘린더 셀 이벤트*/
+
+.fc-day .fc-day-past {
+  height: 60px !important;
+}
+.fc-daygrid-day-frame {
+  height: 60px !important;
 }
 
 /* 기본 이벤트 스타일 */
@@ -160,16 +169,20 @@
     color: #7551e9 !important;
   }
 }
-/* 공휴일 이벤트 */
-.holiday-event {
+
+.custom-event1 {
   background-color: #fff4e7;
   border: none;
   border-left: 4px solid #ffb85c !important;
   i {
     color: #ffb85c;
   }
+  b {
+    color: #ffb85c !important;
+  }
 }
-.custom-event1 {
+
+.holiday-event {
   background-color: #ffe2e6;
   border: none;
   border-left: 4px solid #fd7385 !important;
