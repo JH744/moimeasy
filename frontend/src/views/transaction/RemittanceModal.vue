@@ -7,7 +7,7 @@
             <div class="text-header">보낼 금액</div>
         </template>
         <div class="text-display">
-            <InputText type="text" :value="`${value}원`" v-model="value" readonly class="text-input" />
+            <InputText type="text" :value="formattedValue + '원'" readonly class="text-input" />
         </div>
         <div class="number-buttons">
             <Button v-for="num in numbers" :key="num" rounded class="number-button" @click="handleButtonClick(num)">
@@ -23,52 +23,58 @@
     </Dialog>
 
     <!-- 확인 모달 -->
-    <Dialog v-model:visible="visible2" modal :style="{ width: '30rem', height: '25rem' }">
+    <Dialog v-model:visible="visible2" modal :style="{ width: '32rem', height: '20rem' }">
         <template #header>
-            <div style="text-align: center; font-size: 1.2em; margin-top: 30px; color: black;">
-                <span style="font-weight: bold;">{{ moeimName }}</span> 님에게 {{ value }} 원 이체하시겠습니까?
-                <p>출금계좌 : {{ userBank }}({{ userName }}) {{ userAccount }}</p>
-                <p>입금계좌 : {{ moeimBank }}({{ moeimName }}) {{ moeimAccount }}</p>
+            <div class="confirm-modal-text">
+                <span>{{ moeimName }}</span> 님에게 <span>{{ formattedValue }}</span> 원 이체하시겠습니까?
+                <div>
+                    <p>출금계좌 : {{ userBank }}({{ userName }}) {{ userAccount }}</p>
+                    <p>입금계좌 : {{ moeimBank }}({{ moeimName }}) {{ moeimAccount }}</p>
+                </div>
             </div>
-            <ConfirmDialog></ConfirmDialog>
         </template>
         <div class="button-group">
-            <Button label="확인" rounded class="next-button" @click="confirmremittance" />
             <Button label="취소" rounded class="next-button" @click="closeModal" />
+            <Button label="확인" rounded class="next-button" @click="openCheckPassword" />
         </div>
     </Dialog>
+
+    <!-- 비밀번호 확인 모달-->
+    <checkPassword v-model:visible="checkPassword" @passwordVerified="handlePasswordVerified" />
+
+    <!--확인 모달-->
+    <ConfirmDialog />
 
     <!-- 결과 모달 -->
     <Dialog v-model:visible="visible3" modal :style="{ width: '27rem', height: '30rem' }" :closable="false">
         <template #header>
-            <div style="display: flex; justify-content: center; align-items: center; font-size: 4em; margin-top: 50px; font-weight: bold; color: #7f56d9;
-        margin-bottom: 30px">
-                <i class="pi pi-check-circle" style="font-size: 8rem; margin-right: 20px;"></i>
-                <div style="margin-top: 30px; margin-bottom: 30px">입금</div>
+            <div class="modal-result">
+                <i class="pi pi-check-circle" />
+                <div>입금</div>
             </div>
         </template>
         <div
             style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; margin:auto">
             <p style="margin-bottom: 50px;"><span style="font-weight: bold; color: blue;">{{ userName }}</span> 님의 계좌에서
                 <span style="font-weight: bold; color: blue;"> {{ moeimName }} </span> 계좌에<br>
-                <span style="font-weight: bold; color: blue;">{{ value }} </span>원을 입금하였습니다.
+                <span style="font-weight: bold; color: blue;">{{ formattedValue }} </span>원을 입금하였습니다.
             </p>
             <Button label="닫기" rounded @click="visible3 = false" />
         </div>
     </Dialog>
 </template>
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import '@/views/transaction/style/Transaction.style.css';
 import '@/views/transaction/style/Modal.style.css';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import axios from "axios";
 import { defineProps, defineEmits } from 'vue';
-import SplitButton from 'primevue/splitbutton';
-import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from "primevue/useconfirm";
+import CheckPassword from "./CheckPassword.vue";
+
 
 // 부모로부터 visible 상태를 prop으로 받음
 defineProps({
@@ -85,7 +91,6 @@ function handleClose() {
     emit('update:visible', false); // 부모 컴포넌트와 상태 동기화
 }
 
-
 const confirm = useConfirm();
 const toast = useToast();
 
@@ -97,6 +102,7 @@ const userName = ref(""); // 사용자 이름
 const userAccount = ref(""); // 사용자 계좌번호
 const moeimBank = ref("토스"); // 모임 은행 이름
 const moeimAccount = ref(""); // 모임 계좌번호
+const checkPassword = ref(false); // 비밀번호 입력력
 
 const visible2 = ref(false); // 확인 모달
 const visible3 = ref(false); // 결과 모달
@@ -104,6 +110,30 @@ const visible3 = ref(false); // 결과 모달
 
 // 숫자 버튼 목록
 const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'x'];
+
+// 세 자리마다 콤마가 들어간 표시용 값
+const formattedValue = computed(() => {
+    if (!value.value) {
+        return "";
+    }
+    const unformatted = value.value.replace(/,/g, "");
+    const numericVal = parseFloat(unformatted);
+
+    // 소수점만 입력 등으로 parseFloat가 NaN이면
+    if (isNaN(numericVal)) {
+        return value.value;
+    }
+
+    const parts = unformatted.split(".");
+    let intPart = parts[0];
+    const decimalPart = parts[1] || "";
+
+    intPart = parseInt(intPart, 10).toLocaleString();
+    return decimalPart.length > 0
+        ? `${intPart}.${decimalPart}`
+        : intPart;
+});
+
 
 // 버튼 클릭 시 호출
 function handleButtonClick(num) {
@@ -175,6 +205,14 @@ async function remittanceAmount() {
     }
 }
 
+// 비밀번호가 일치하면 입금 처리
+const handlePasswordVerified = (isValid) => {
+    if (isValid) {
+        confirmremittance();
+    }
+}
+
+
 // 확인 버튼 클릭 -> 송금 처리
 async function confirmremittance() {
     try {
@@ -187,6 +225,7 @@ async function confirmremittance() {
         const userRaw = localStorage.getItem("user");
         let userId = null;
         let moeimId = null;
+        let userName = null; // 사용자 이름
 
         if (userRaw) {
             const user = JSON.parse(userRaw);
@@ -215,14 +254,14 @@ async function confirmremittance() {
         visible2.value = false; // 확인 모달 닫기
         visible3.value = true; // 결과 모달 열기
     } catch (error) {
-        console.error("송금 중 오류 발생:", error.response?.data || error.message);
-        confirm1(error.response?.data || error.message);
+        console.error("송금 중 오류 발생:", error.response?.data);
+        confirm1(error.response?.data);
     }
 }
 
 const confirm1 = (message) => {
     confirm.require({
-        message: message || '회비를 이미 납부하였습니다.',
+        message: message,
         header: 'Confirmation',
         icon: 'pi pi-exclamation-triangle',
         rejectProps: {
@@ -260,6 +299,14 @@ function closeModal() {
         life: 3000,
     });
     visible2.value = false;
+}
+
+// 확인 버튼 클릭 시 호출되는 함수
+function openCheckPassword() {
+    console.log("openCheckPassword 호출됨");
+    visible2.value = false;
+    checkPassword.value = true;
+    console.log("visible2:", visible2.value, "checkPassword:", checkPassword.value);
 }
 </script>
 

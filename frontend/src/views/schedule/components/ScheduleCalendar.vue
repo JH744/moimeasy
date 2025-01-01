@@ -135,8 +135,8 @@ const auth = useAuthStore();
 const toast = useToast();
 const primeConfirm = useConfirm();
 const types = ref([
-  { name: '타입A', type: 'custom-event1' },
-  { name: '타입B ', type: 'holiday-event' },
+  { name: '타입A', type: 'holiday-event' },
+  { name: '타입B ', type: 'custom-event1' },
   { name: '타입C', type: 'important-event' },
   { name: '타입D', type: '' },
   { name: '타입E', type: 'custom-event2' },

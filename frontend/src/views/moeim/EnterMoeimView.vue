@@ -1,5 +1,6 @@
 <template>
   <div class="join-moeim-container">
+    <h1 class="title2">MoeimEasy</h1>
     <h2 class="title">모임 코드 입력</h2>
     <form @submit.prevent="joinMoeim">
       <div class="form-group">
@@ -33,6 +34,7 @@
 import axios from 'axios';
 import Modal from '@/components/Modal.vue';
 import { useAuthStore } from '@/stores/auth';
+import { fetchAddNotification } from '@/utils/notification-add-utils';
 
 axios.defaults.baseURL = 'http://localhost:8088';
 axios.defaults.withCredentials = true;
@@ -46,6 +48,7 @@ export default {
       },
       isModalVisible: false,
       modalMessage: '',
+      isSuccess: false,
     };
   },
   methods: {
@@ -70,6 +73,12 @@ export default {
 
         authStore.user.moeimId = moeimId;
         localStorage.setItem('user', JSON.stringify(authStore.user));
+
+        fetchAddNotification(
+          '회원 입장 알림',
+          `${authStore.user.nickname}님이 모임에 가입하셨습니다.`,
+          moeimId
+        );
 
         this.modalMessage = message;
         this.isModalVisible = true;
@@ -96,16 +105,25 @@ export default {
 
 <style scoped>
 .join-moeim-container {
-  max-width: 600px;
+  width: 400px;
+  min-width: 400px;
   margin: 50px auto;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.title2 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #7f56d9;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
 .title {
   font-size: 24px;
+  text-align: center;
   font-weight: bold;
   color: #414651;
   margin-bottom: 20px;
@@ -117,7 +135,7 @@ export default {
 
 label {
   display: block;
-  font-weight: bold;
+
   margin-bottom: 5px;
 }
 

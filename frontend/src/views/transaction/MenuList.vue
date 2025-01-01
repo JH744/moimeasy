@@ -25,7 +25,7 @@ import 'primeicons/primeicons.css';
 const items = ref([
   { route: '/remittance-list', label: '회비 납부내역', icon: 'pi pi-table' },
   { route: '/transaction-list', label: '거래내역', icon: 'pi pi-receipt' },
-  { route: '/category', label: '카테고리별 소비 분석', icon: 'pi pi-chart-pie' },
+  { route: '/category', label: '카테고리별 지출 내용', icon: 'pi pi-chart-pie' },
 ]);
 </script>
 

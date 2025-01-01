@@ -8,7 +8,7 @@
       accept="image/*"
       :maxFileSize="1000000"
       @select="onSelectedFiles"
-      @upload="onTemplatedUpload($event)"
+      @upload="onTemplatedUpload"
     >
       <!-- 파일업로드 헤더 -->
       <template
@@ -45,12 +45,11 @@
           </div>
           <!-- 진행바 -->
           <ProgressBar
-            :value="totalSizePercent"
-            :showValue="false"
+            :value="progressPercent"
+            :showValue="true"
             class="progressbar-style"
           >
           </ProgressBar>
-          <span class="whitespace-nowrap">{{ totalSize }}B / 1Mb</span>
         </div>
       </template>
       <template
@@ -61,7 +60,7 @@
           removeFileCallback,
         }"
       >
-        <!-- 선택된 파일들  -->
+        <!-- 선택된 파일들 (pending목록) -->
         <div class="flex flex-col gap-8 pt-4">
           <div v-if="files.length > 0" class="seleted-file-box">
             <h5>Pending</h5>
@@ -98,7 +97,7 @@
               </div>
             </div>
           </div>
-          <!-- 업로드된 파일들 -->
+          <!-- 업로드된 파일들 (Completed목록)-->
           <div v-if="uploadedFiles.length > 0" class="seleted-file-box">
             <h5>Completed</h5>
             <div class="flex flex-wrap gap-4">
@@ -159,14 +158,21 @@ import {
 } from 'firebase/storage';
 import { firebaseStorage } from '@/firebase/firebaseConfig';
 import axios from 'axios';
-
+const user = JSON.parse(localStorage.getItem('user'));
+const moeimId = user.moeimId;
 const $primevue = usePrimeVue();
 const toast = useToast();
 // 파일 업로드 관련 변수
 const totalSize = ref(0);
 const totalSizePercent = ref(0);
 const files = ref([]);
-const uploadedFiles = ref([]); // uploadedFiles 선언 및 초기화
+// 파이버베이스 스토리지업로드 후 다운로드URL을 담을 배열
+const uploadedFileUrls = ref([]);
+
+// 총 파일 개수 대비 업로드된 파일 개수
+const uploadedCount = ref(0);
+// 파일 개수 기준 진행도 (0~100)
+const progressPercent = ref(0);
 // 파일 크기 단위 변환 함수 -> 파일크기 표시용
 const formatSize = (bytes) => {
   const k = 1024;
@@ -193,7 +199,9 @@ const onSelectedFiles = (event) => {
   files.value.forEach((file) => {
     totalSize.value += parseInt(formatSize(file.size));
   });
-  totalSizePercent.value = totalSize.value / 10;
+  totalSizePercent.value = files.value.length / 10;
+  uploadedCount.value = 0;
+  progressPercent.value = 0;
 };
 
 /**  파일 목록 Clear */
@@ -211,42 +219,72 @@ const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
   totalSizePercent.value = totalSize.value / 10;
 };
 
+/**  파이어베이스 스토리지업로드*/
+// const uploadTofirebase = async (file) => {
+//   for (const file of files.value) {
+//     // Firebase 업로드
+//     const storageRef = firebaseRef(
+//       firebaseStorage,
+//       `moeimeasy/gallery/${file.name}`
+//     );
+//     await uploadBytes(storageRef, file);
+//     const downloadUrl = await getDownloadURL(storageRef);
+//     console.log('다운로드 URL:', downloadUrl);
+//     // 다운로드 URL을 배열에 저장
+//     uploadedFileUrls.value.push({
+//       fileName: file.name,
+//       downloadUrl,
+//     });
+//   }
+// };
+/**  파이어베이스 스토리지업로드*/
+const uploadTofirebase = async (file) => {
+  // 업로드할 총 파일 수
+  const totalFiles = files.value.length;
+  uploadedFileUrls.value = [];
+  uploadedCount.value = 0;
+  progressPercent.value = 0;
+
+  for (let i = 0; i < totalFiles; i++) {
+    const file = files.value[i];
+    // Firebase 업로드
+    const storageRef = firebaseRef(
+      firebaseStorage,
+      `moeimeasy/gallery/${file.name}`
+    );
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    // URL 목록 저장
+    uploadedFileUrls.value.push({
+      fileName: file.name,
+      downloadUrl,
+    });
+
+    // 하나 업로드할 때마다 진행도 갱신됨
+    uploadedCount.value += 1;
+    progressPercent.value = Math.floor(
+      (uploadedCount.value / totalFiles) * 100
+    );
+  }
+};
+
 /**  업로드 버튼 클릭 시 (수동 업로드 로직) */
 const uploadEvent = async (primevueUploadCallback) => {
-  console.log('업로드 버튼 클릭');
-
-  // 1) Firebase 업로드 → 2) 서버 전송
   try {
-    // 업로드한 파일들의 다운로드 URL을 담을 배열
-    const uploadedFileUrls = [];
-    for (const file of files.value) {
-      // Firebase 업로드
-      const storageRef = firebaseRef(
-        firebaseStorage,
-        `moeimeasy/gallery/${file.name}`
-      );
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      console.log('다운로드 URL:', downloadUrl);
-      // 다운로드 URL을 배열에 저장
-      uploadedFileUrls.push({
-        fileName: file.name,
-        downloadUrl,
-      });
-    }
-
+    // 1) 파일을 Firebase Storage에 업로드
+    await uploadTofirebase();
     // 2) 서버에 다운로드 URL 전송
     const response = await axios.post('/api/v1/gallery', {
-      files: uploadedFileUrls,
-      moeimId: 1,
+      files: uploadedFileUrls.value,
+      moeimId: moeimId, // 임시로 1로 설정
     });
 
     console.log('서버 저장 결과:', response.data);
 
-    // *** 핵심 수정 부분 ***
     if (response.data) {
-      console.log(files.value);
-      const uploadedFilesData = uploadedFileUrls.map((uploadedFile) => ({
+      console.log(' 실행>>>>>', files.value);
+      const uploadedFilesData = uploadedFileUrls.value.map((uploadedFile) => ({
         name: uploadedFile.fileName,
         objectURL: uploadedFile.downloadUrl,
         size:
@@ -255,10 +293,12 @@ const uploadEvent = async (primevueUploadCallback) => {
           files.value.find((f) => f.name === uploadedFile.fileName)?.type || '', // type이 없을 경우 빈 문자열로 설정
       }));
 
-      // FileUpload 컴포넌트의 uploadedFiles를 업데이트하는 올바른 방법
+      // 1) PrimeVue에게 업로드 완료를 알린다.
       primevueUploadCallback({ files: uploadedFilesData });
-      uploadedFiles.value = uploadedFilesData; // uploadedFiles 업데이트
+
       console.log('primevueUploadCallback 호출됨', uploadedFilesData);
+      files.value = [];
+      uploadedFileUrls.value = [];
     }
 
     console.log('파일 업로드 완료');
@@ -284,8 +324,9 @@ const uploadEvent = async (primevueUploadCallback) => {
 
 // PrimeVue FileUpload의 @upload 이벤트 콜백
 // (여기서는 업로드 완료 후의 후처리를 주로 담당)
-const onTemplatedUpload = () => {
-  console.log('업로드 완료');
+const onTemplatedUpload = (event) => {
+  console.log('onTemplatedUpload안임', event.files);
+  console.log('onTemplatedUpload가 실행되는상태 업로드 완료');
   toast.add({
     group: 'positioned',
     severity: 'info',
@@ -295,3 +336,9 @@ const onTemplatedUpload = () => {
   });
 };
 </script>
+
+<style scoped>
+.card {
+  margin: 20px auto;
+}
+</style>

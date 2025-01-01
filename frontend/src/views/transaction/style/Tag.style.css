@@ -25,26 +25,36 @@
   background-color: #17a2b8;
 }
 
-.p-tag.custom-success {
-  background-color: #c19ed2 !important;
-  /* 녹색 */
-  color: white !important;
+/* (1) 연보라 배경 */
+.p-tag.custom-tag1 {
+  background-color: #c19ed299 !important; /* #c19ed2 + alpha(70%) */
+  color: whitesmoke !important; /* 짙은 회색 */
+  font-weight: bold !important;
 }
 
-.p-tag.custom-danger {
-  background-color: #ffa2c3 !important;
-  /* 빨간색 */
-  color: white !important;
+/* (2) 핑크 배경 */
+.p-tag.custom-tag2 {
+  background-color: #ffa2c399 !important;
+  color: whitesmoke !important;
+  font-weight: bold !important;
 }
 
-.p-tag.custom-info {
-  background-color: #96c2ee !important;
-  /* 파란색 */
-  color: white !important;
+/* (3) 하늘색 배경 */
+.p-tag.custom-tag3 {
+  background-color: #96c2ee99 !important;
+  color: whitesmoke !important;
+  font-weight: bold !important;
 }
 
-.p-tag.custom-warning {
-  background-color: #68a3ee !important;
-  /* 노란색 */
-  color: black !important;
+/* (4) 연한 그린 배경 */
+.p-tag.custom-tag4 {
+  background-color: #61c99399 !important;
+  color: whitesmoke !important;
+  font-weight: bold !important;
+}
+/* 보라색 배경*/
+.default {
+  background-color: #b83bdf99 !important;
+  color: whitesmoke !important;
+  font-weight: bold !important;
 }

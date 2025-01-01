@@ -1,0 +1,13 @@
+.content {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1.2rem;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  width: 50%;
+  height: 40px;
+  /* background-color: #f0f0f0; */
+  /* 예시: 배경색 추가 */
+  display: inline-block;
+  /* 필요 시 추가 */
+  /* color: #333; */
+}

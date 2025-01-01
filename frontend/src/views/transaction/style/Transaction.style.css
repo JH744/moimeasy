@@ -1,8 +1,8 @@
 /* 전체 스타일 정의 */
 
 .total-frame {
-  width: 98%;
-  margin: 10px;
+  width: 95%;
+  margin: 30px;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
@@ -12,6 +12,7 @@
 .title-bar {
   display: flex;
   align-items: center;
+  margin-bottom: 20px;
   width: 90%;
 }
 
@@ -19,6 +20,13 @@
   font-size: 2em;
   font-weight: bold;
   flex: 1;
+}
+
+.sub-title-bar {
+  gap: 2rem;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
 }
 
 .icon-button-group {
@@ -35,4 +43,16 @@
   justify-content: center;
   font-size: 1.5rem;
   font-weight: bold;
+}
+
+.confirm-modal-text {
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 30px;
+  color: black;
+}
+
+.confirm-modal-text > span {
+  font-weight: bold;
+  color: blue;
 }

@@ -7,6 +7,8 @@ import com.kosa.moimeasy.user.exception.InvalidPasswordResetException;
 import com.kosa.moimeasy.user.exception.PasswordMismatchException;
 import com.kosa.moimeasy.user.exception.UserNotFoundException;
 import com.kosa.moimeasy.user.service.FindService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@Tag(name="아이디&비밀번호 찾기 페이지" , description="Find API")
 @RestController
 @RequestMapping("/api/v1")
 @Validated
@@ -27,6 +29,7 @@ public class FindController {
     /**
      * 이메일 찾기 API
      */
+    @Operation(summary = "아이디 찾기 " ,description ="모든 유저 아이디 찾기" )
     @PostMapping("/find/email")
     public ResponseEntity<EmailFindResponse> findEmail(@Valid @RequestBody EmailFindRequest request) {
         try {
@@ -41,6 +44,7 @@ public class FindController {
     /**
      * 회원 조회
      */
+    @Operation(summary = "회원 조회 " ,description ="모든 유저 회원 조회" )
     @PostMapping("/find/user")
     public ResponseEntity<?> findUser(@Valid @RequestBody FindUserRequest request) {
         try {
@@ -75,6 +79,7 @@ public class FindController {
     /**
      * 비밀번호 초기화
      */
+    @Operation(summary = "비밀번호 재설정 " ,description ="유저 비밀번호 재설정" )
     @PostMapping("/reset/password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
         try {

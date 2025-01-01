@@ -15,6 +15,7 @@ import com.kosa.moimeasy.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,6 +35,9 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final MoeimRepository moeimRepository;
     private final TransactionRepository transactionRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Map<Long, Integer> attemptCount = new HashMap<>(); // 사용자별 비밀번호 시도 횟수 저장
+    private static final int MAX_ATTEMPTS = 5; // 최대 비밀번호 입력 횟수
 
     // 유저 계좌 입금
     @Transactional
@@ -45,7 +49,7 @@ public class TransactionService {
 
         // 계좌 금액 변경
         if (request.getAmount() <= 0) {
-            throw new CustomException(BALANCE_NOT_ENOUGH); // 예외 처리: 잘못된 금액
+            throw new CustomException(BALANCE_NOT_ENOUGH); // 예외 처리: 잔액 부족
         }
         user.setAmount(user.getAmount() + request.getAmount());
 
@@ -162,18 +166,20 @@ public class TransactionService {
     @Transactional
     public RemittanceDto.Response remittance(RemittanceDto.Request request) {
 
+        // 유저 계좌 없을 때
         User sentAccount = userRepository.findById(request.getUserId())
             .orElseThrow(() -> new CustomException(SENT_ACCOUNT_NOT_FOUND));
 
+        // 모임 계좌 없을 때
         Moeim receivedAccount = moeimRepository.findById(request.getMoeimId())
             .orElseThrow(() -> new CustomException(RECEIVED_ACCOUNT_NOT_FOUND));
 
         // (송금 요청 금액 > 보내는 계좌의 잔액)의 경우 예외 발생
         if (request.getAmount() > sentAccount.getAmount()) {
-            throw new CustomException(BALANCE_NOT_ENOUGH);
+            throw new CustomException(USER_BALANCE_NOT_ENOUGH);
         }
 
-        // 이미 납부했으면 납부했다는 알림
+        // 이미 납부했으면 납부했다는 예외 발생
         List<Transaction> transactions = transactionRepository.findByUserId(request.getUserId());
 
         for (Transaction transaction : transactions) {
@@ -262,6 +268,12 @@ public class TransactionService {
         return getRemittanceListResponse(request.getMoeimId(), startDate, endDate);
     }
 
+    // 모임 확인
+    private Moeim getValidmoeim(Long moeimid) {
+        return moeimRepository.findById(moeimid)
+            .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
+    }
+
     // 거래내역 조회
     @Transactional
     public TransactionListDto.Response getTransactionList(TransactionListDto.Request request) {
@@ -276,15 +288,13 @@ public class TransactionService {
         LocalDate startDate = request.getStartDate();
         LocalDate endDate = request.getEndDate();
         LocalDate nowDate = LocalDate.now();
-        int defaultDateRange = 7;
-        int maxDateRange = 40;
 
-        // 시작 날짜와 끝 날짜가 null 인 경우 (조회일 포함 일주일 내역 반환)
-        if (startDate == null && endDate == null) {
-            LocalDate weekAgoDate = nowDate.minusDays(defaultDateRange - 1);
-
-            return getTransactionListResponse(request.getMoeimId(), weekAgoDate, nowDate);
-        }
+//        // 시작 날짜와 끝 날짜가 null 인 경우 (조회일 포함 일주일 내역 반환)
+//        if (startDate == null && endDate == null) {
+//            LocalDate weekAgoDate = nowDate.minusDays(defaultDateRange - 1);
+//
+//            return getTransactionListResponse(request.getMoeimId(), weekAgoDate, nowDate);
+//        }
 
         // 시작 날짜와 끝 날짜 둘 중 하나만 null 로 보낸 경우
         if (startDate == null || endDate == null) {
@@ -298,56 +308,49 @@ public class TransactionService {
             throw new CustomException(INVALID_DATE);
         }
 
+        // 시작 날짜가 조회 당일 날짜를 초과한 경우 오늘 날짜로 반환
+        if (startDate.isAfter(nowDate)) {
+            throw new CustomException(TRANSACTION_LAST_MONTH);
+        }
+
+
         // 끝 날짜가 조회 당일 날짜를 초과한 경우 오늘 날짜로 반환
         if (endDate.isAfter(nowDate)) {
             return getTransactionListResponse(request.getMoeimId(), startDate, nowDate);
-//            throw new CustomException(INVALID_DATE);
         }
 
-        // 조회 기간이 최대 조회 기간을 넘을 경우
-        int betweenDays = (int) ChronoUnit.DAYS.between(startDate, endDate);
-        if (betweenDays + 1 > maxDateRange) {
-            throw new CustomException(INVALID_DATE_RANGE);
-        }
+//        // 조회 기간이 최대 조회 기간을 넘을 경우
+//        int betweenDays = (int) ChronoUnit.DAYS.between(startDate, endDate);
+//        if (betweenDays + 1 > maxDateRange) {
+//            throw new CustomException(INVALID_DATE_RANGE);
+//        }
 
         // 두 날짜 전부 제대로 조회한 경우
         return getTransactionListResponse(moeim.getMoeimId(), startDate, endDate);
     }
 
-    // 모임 확인
-    private Moeim getValidmoeim(Long moeimid) {
-        return moeimRepository.findById(moeimid)
-            .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
-    }
-
-    // 거래 유형
-    private String getTransactionTargetName(Transaction transaction) {
-        switch (transaction.getTransactionType()) {
-            case WITHDRAW -> {
-                return transaction.getCategoryName();
-            }
-            case DEPOSIT -> {
-                return transaction.getDepositName();
-            }
-            case REMITTANCE -> {
-                return transaction.getDepositName();
-            }
-        }
-        return ErrorCode.TRANSACTION_TYPE_NOT_FOUND.getDescription();
-    }
-
-    // 거래 내역 조회 Response Dto 반환
+    // 거래 내역 조회 Response 반환 메소드
     private TransactionListDto.Response getTransactionListResponse(Long moeimId, LocalDate startDate, LocalDate endDate
     ) {
         List<Transaction> resultList = transactionRepository.findByMoeimAccountAndDateRange(
                 moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
         );
 
-        Long monthDeposit = transactionRepository.findMonthlyIncome(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-        );
+        LocalDate nowDate = LocalDate.now();
 
-        Long monthExpense = transactionRepository.findMonthlyExpenditure(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-        );
+        // 거래내역이 존재하지 않을 시 예외 메시지 전송
+        if (resultList.isEmpty()) {
+            throw new CustomException(TRANSACTION_LIST_NOT_FOUND);
+        }
+
+        // 시작 날짜가 조회 당일 날짜를 초과한 경우 오늘 날짜로 반환
+        if (startDate.isAfter(nowDate)) {
+            throw new CustomException(TRANSACTION_LAST_MONTH);
+        }
+
+        Long monthDeposit = transactionRepository.findMonthlyIncome(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
+
+        Long monthExpense = transactionRepository.findMonthlyExpenditure(moeimId, startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX));
 
         return TransactionListDto.Response.builder()
                 .transactionList(resultList.stream()
@@ -366,6 +369,24 @@ public class TransactionService {
             .build();
     }
 
+    // 거래 유형
+    private String getTransactionTargetName(Transaction transaction) {
+        switch (transaction.getTransactionType()) {
+            case WITHDRAW -> {
+                return transaction.getCategoryName();
+            }
+            case DEPOSIT -> {
+                return transaction.getDepositName();
+            }
+            case REMITTANCE -> {
+                return transaction.getDepositName();
+            }
+        }
+        return ErrorCode.TRANSACTION_TYPE_NOT_FOUND.getDescription();
+    }
+
+
+    // 거래내역 타입 반환
     private String determineTransactionType(Transaction transaction) {
         if (transaction.getTransactionType()== TransactionType.WITHDRAW) {
             return "출금";
@@ -382,22 +403,29 @@ public class TransactionService {
         // 모임에 가입된 유저
         List<User> users = userRepository.findByMoeimId(moeimId);
 
+        LocalDate nowDate = LocalDate.now();
+
+        // 시작 날짜가 조회 당일 날짜를 초과한 경우 오늘 날짜로 반환
+        if (startDate.isAfter(nowDate)) {
+            throw new CustomException(TRANSACTION_LAST_MONTH);
+        }
+
         // 송금내역 있는 사용자들에 대한 DTO 변환
         List<RemittanceListDto> remittanceList = resultList.stream()
                 .map(transaction -> {
                     Long userId = null;
                     String userName = "알 수 없는 사용자";
-                    String photo = "default-photo.png";
+                    String profileImage = "default-photo.png";
                     if (transaction.getUserAccount() != null) {
                         userId = transaction.getUserAccount().getUserId();
                         userName = transaction.getUserAccount().getUserName();
-                        photo = transaction.getUserAccount().getProfileImage();
+                        profileImage = transaction.getUserAccount().getProfileImage();
                     }
 
                     return RemittanceListDto.builder()
                             .userId(userId)
                             .receivedAccount(transaction.getReceivedAccount())
-                            .photo(photo)
+                            .profileImage(profileImage)
                             .userName(userName)
                             .amount(transaction.getAmount())
                             .transactionType(TransactionType.REMITTANCE)
@@ -415,11 +443,11 @@ public class TransactionService {
         for (User user : users) {
             if (!userWithTransactions.contains(user.getUserId())) {
                 String userName = user.getNickname() != null ? user.getNickname() : "알 수 없는 사용자";
-                String photo = user.getProfileImage();
+                String profileImage = user.getProfileImage();
                 remittanceList.add(RemittanceListDto.builder()
                         .userId(user.getUserId())
                         .receivedAccount("알 수 없는 계좌")
-                        .photo(photo)
+                        .profileImage(profileImage)
                         .userName(userName)
                         .amount(0.0)
                         .transactionType(null)
@@ -434,7 +462,7 @@ public class TransactionService {
     }
 
 
-    // 카테고리 반환
+    // 카테고리 리스트 반환
     public InitialDataDto getInitialData(InitialDataDto request) {
 
         //사용자 조회
@@ -442,9 +470,9 @@ public class TransactionService {
                 .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 사용자에 해당하는 모임 조회 (사용자의 ID를 기반으로)
-        Moeim moeim = moeimRepository.findByUserId(user.getMoeimId())
+        Moeim moeim = moeimRepository.findById(user.getMoeimId())
                 .orElseThrow(() -> new ResourceNotFoundException("모임을 찾을 수 없습니다."));
-
+        LocalDate nowDate = LocalDate.now();
         LocalDate startDate = request.getStartDate(); // 월의 시작일 2024-12-01T00:00
         LocalDate endDate = request.getEndDate(); // 월의 마지막일 2024-12-31T23:59:59
 
@@ -455,6 +483,16 @@ public class TransactionService {
 
         // 모임에 해당하는 거래 데이터 조회 (모임 ID를 기반으로)
         List<Transaction> transactions = transactionRepository.findCategoryNameByMoeimId(moeim.getMoeimId(), startDateTime, endDateTime);
+
+        // 시작 날짜가 조회 당일 날짜를 초과한 경우 오늘 날짜로 반환
+        if (startDate.isAfter(nowDate)) {
+            throw new CustomException(TRANSACTION_LAST_MONTH);
+        }
+
+        // 거래내역이 존재하지 않을 시 예외 메시지 전송
+        if (transactions.isEmpty()) {
+            throw new CustomException(TRANSACTION_LIST_NOT_FOUND);
+        }
 
         // double 타입으로 합산
         Map<String, Double> categoryMap = transactions.stream()
@@ -483,6 +521,35 @@ public class TransactionService {
                 .startDate(startDate)
                 .endDate(endDate)
                 .categories(categories)
+                .build();
+    }
+
+    // 비밀번호 확인
+    public PasswordCheckDto.Response checkPassword(PasswordCheckDto.Request passwordCheckDto){
+        User user = userRepository.findById(passwordCheckDto.getUserId())
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
+        boolean isPasswordValid = passwordEncoder.matches(passwordCheckDto.getPassword(), user.getPassword());
+
+        if (!isPasswordValid) {
+            int currentCount = attemptCount.getOrDefault(passwordCheckDto.getUserId(), 0) + 1;
+            attemptCount.put(passwordCheckDto.getUserId(), currentCount);
+            log.info("비밀번호가 일치하지 않습니다. 시도 횟수 : {}", currentCount);
+            if(currentCount == MAX_ATTEMPTS) {
+                attemptCount.remove(passwordCheckDto.getUserId()); // 카운트 초기화
+                throw new CustomException(PASSWORD_NOT_MATCH); // 예외 처리: 5번 틀리면 입금, 송금 종료
+            }
+            int remainingAttempts = MAX_ATTEMPTS - currentCount;
+            return PasswordCheckDto.Response.builder()
+                    .isValid(false)
+                    .message("비밀번호가 일치하지 않습니다.")
+                    .remainingAttempts(remainingAttempts)
+                    .build();
+        }
+        attemptCount.remove(passwordCheckDto.getUserId());
+        return PasswordCheckDto.Response.builder()
+                .isValid(true)
+                .message("비밀번호가 일치합니다.")
                 .build();
     }
 }

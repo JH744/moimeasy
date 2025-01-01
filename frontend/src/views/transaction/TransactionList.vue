@@ -1,47 +1,87 @@
 <template>
   <div class="total-frame">
-    <!-- <PayMenuList /> 메뉴 위치 -->
-    <div class="title-bar">
-      <div class="title">{{ currentMonth }}</div>
-      <div class="accountBalance"> 잔액 : {{ accountBalance }}원</div>
-      <div class="deposit"> 수입 : {{ totalDeposit }}</div>
-      <div class="expense"> 지출 : {{ totalExpense }}</div>
-      <div class="icon-button-group">
-        <i class="pi pi-caret-left" style="font-size: 1rem" @click="updateMonth(-1)"></i>
-        <i class="pi pi-calendar-times" style="font-size: 1rem"></i>
-        <i class="pi pi-caret-right" style="font-size: 1rem" @click="updateMonth(1)"></i>
+    <div class="header">
+      <div class="title-bar">
+        <div class="title">{{ currentMonth }}</div>
       </div>
     </div>
     <div class="card datatable-card">
       <template v-if="products.length">
-        <DataTable :value="products" ref="dt" class="centered-datatable" tableStyle="min-width: 50rem">
+        <DataTable :value="products" removableSort virtualScroll scrollHeight="500px" stripedRows
+          tableStyle="min-width: 50rem" ref="dt" class="centered-datatable">
           <template #header>
+            <div class="icon-button-group">
+              <i class="pi pi-caret-left icon-hover" @click="updateMonth(-1)"></i>
+              <i class="pi pi-calendar-times"></i>
+              <i class="pi pi-caret-right icon-hover" @click="updateMonth(1)"></i>
+            </div>
             <div class="export-button-container">
+              <div class="money">
+                <span class="money-item">
+                  <Tag class="custom-tag">잔액 : {{ accountBalance.toLocaleString() }} 원</Tag>
+                </span>
+                <span class="money-item">
+                  <Tag class="custom-tag" style="color: #519de0; background-color: #519de024;">
+                    수입 : {{ totalDeposit.toLocaleString() }} 원</Tag>
+                </span>
+                <span class="money-item">
+                  <Tag class="custom-tag" style="color: #e051a9; background-color: #e051a920;">
+                    지출 : {{ totalExpense.toLocaleString() }} 원</Tag>
+                </span>
+              </div>
               <Button icon="pi pi-external-link" label="내보내기" iconPos="right" @click="exportCSV($event)"
                 class="export-button" />
             </div>
           </template>
-          <Column v-for="col of columns" :key="col.field" :field="col.field" :header="col.header"></Column>
+
+          <!-- 날짜 컬럼 -->
+          <Column field="tradedate" header="날짜" sortable style="width: 25%"></Column>
+
+          <!-- 거래내역 컬럼 -->
+          <Column field="tradelist" header="거래내역" sortable style="width: 25%"></Column>
+
+          <!-- 금액 컬럼 -->
+          <Column field="trademoney" header="금액" sortable style="width: 25%">
+            <template #body="slotProps">
+              <span :class="slotProps.data.tradetype === '출금' ? 'money-negative' : 'money-positive'">
+                {{ slotProps.data.tradetype === '출금' ? '-' : '' }}
+                {{ Number(slotProps.data.trademoney).toLocaleString() }}원
+              </span>
+            </template>
+          </Column>
+
+          <!-- 구분 컬럼 (Tag 컴포넌트 사용 예시) -->
+          <Column field="tradetype" header="구분" sortable style="width: 25%">
+            <template #body="slotProps">
+              <Tag :value="slotProps.data.tradetype"
+                :severity="slotProps.data.tradetype === '입금' ? 'success' : 'danger'" />
+            </template>
+          </Column>
         </DataTable>
       </template>
       <template v-else>
+        데이터가 없습니다.
       </template>
     </div>
+    <ConfirmDialog />
   </div>
 </template>
-
 <script setup>
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Button from 'primevue/button';
+import Tag from 'primevue/tag';
 import axios from "axios";
-import Dialog from 'primevue/dialog';
-import '@/views/transaction/style/transaction.style.css';
+import '@/views/transaction/style/Transaction.style.css';
+import '@/views/transaction/style/Button.style.css';
 import '@/views/transaction/style/Modal.style.css';
 import 'primeicons/primeicons.css';
 import { ref, onMounted } from 'vue';
 import { useLoadingStore } from '@/stores/useLoadingStore';
+import { useRouter } from 'vue-router'; // router 사용을 위해 추가
+import { useConfirm } from "primevue/useconfirm"; // confirm 사용을 위해 추가
 
+const router = useRouter(); // router 사용을 위해 추가
 const loadingStore = useLoadingStore();
 const currentMonth = ref('');
 const dt = ref();
@@ -50,26 +90,10 @@ const currentDate = ref(new Date()); // 현재 날짜를 기준으로 동작
 const accountBalance = ref(0);
 const totalDeposit = ref(0);
 const totalExpense = ref(0);
-const visible = ref(false);
+const confirm = useConfirm(); // alert 창
+const previousDate = ref(new Date()); // 이전 월
+const isReverting = ref(false); // 되돌림 상태
 
-
-// 데이터가 없을 때 다이얼로그를 표시
-if (!products.value.length) {
-  visible.value = true;
-}
-
-// 다이얼로그 닫기 함수
-const closeDialog = () => {
-  visible.value = false;
-};
-
-
-const columns = [
-  { field: 'tradedate', header: '날짜' },
-  { field: 'tradelist', header: '거래내역' },
-  { field: 'trademoney', header: '금액' },
-  { field: 'tradetype', header: '구분' },
-];
 
 // 데이터 불러오기 함수
 const fetchTransactions = async () => {
@@ -85,7 +109,6 @@ const fetchTransactions = async () => {
     }
 
     if (!accessToken || !moeimId) {
-      console.error('필수 데이터(accessToken 또는 moeimId)가 누락되었습니다.');
       router.push('/login'); // 로그인 화면으로 리디렉션
       return;
     }
@@ -105,37 +128,45 @@ const fetchTransactions = async () => {
     if (response.data.transactionList) {
       const transactionList = response.data.transactionList;
 
-      if (transactionList)
-        accountBalance.value = transactionList[transactionList.length - 1].balance;
+      // 잔액, 수입, 지출
+      const lastTransaction = transactionList[transactionList.length - 1];
+      accountBalance.value = lastTransaction.balance;
+      totalDeposit.value = lastTransaction.monthDeposit;
+      totalExpense.value = lastTransaction.monthExpense;
 
-      totalDeposit.value = transactionList[transactionList.length - 1].monthDeposit;
-
-      totalExpense.value = transactionList[transactionList.length - 1].monthExpense;
-
-
-      products.value = response.data.transactionList.map(transaction => ({
+      // 거래내역 데이터
+      products.value = transactionList.map(transaction => ({
         tradedate: transaction.transactedAt,
         tradelist: transaction.transactionTargetName,
         trademoney: transaction.amount,
         tradetype: transaction.type,
       }));
-    } else {
-      products.value = [];
-      console.warn('응답 데이터에 transactionList가 없습니다.');
     }
+
   } catch (error) {
-    console.error('거래내역을 가져오는 중 오류가 발생했습니다:', error);
+    if (!isReverting.value) {
+      isReverting.value = true;
+      confirm1(error.response.data);
+    }
     products.value = [];
+    accountBalance.value = 0;
+    totalDeposit.value = 0;
+    totalExpense.value = 0;
   } finally {
     loadingStore.stopLoading(); // 로딩 중지
   }
 };
 
+
 // 월 변경 및 데이터 다시 가져오기
 const updateMonth = (offset) => {
-  currentDate.value.setMonth(currentDate.value.getMonth() + offset);
-  currentMonth.value = `${currentDate.value.getMonth() + 1}월 거래내역`;
-  fetchTransactions();
+  if (!isReverting.value) {
+    previousDate.value = new Date(currentDate.value); // 이전 날짜 저장
+    currentDate.value.setMonth(currentDate.value.getMonth() + offset);
+    const month = currentDate.value.getMonth() + 1;
+    currentMonth.value = `${month}월 거래내역`;
+    fetchTransactions();
+  }
 };
 
 // 컴포넌트 초기화
@@ -147,40 +178,77 @@ onMounted(() => {
 
 // CSV 내보내기
 const exportCSV = () => {
-  dt.value.exportCSV();
+  if (dt.value) {
+    dt.value.exportCSV();
+  }
+};
+
+const confirm1 = (message) => {
+  confirm.require({
+    message: message,
+    header: 'Error',
+    icon: 'pi pi-times',
+    rejectProps: {
+      label: '취소',
+      severity: 'secondary',
+      outlined: true
+    },
+    acceptProps: {
+      label: '확인'
+    },
+    accept: () => {
+      // 이전 날짜로 되돌리기
+      currentDate.value = previousDate.value;
+      const month = currentDate.value.getMonth() + 1;
+      currentMonth.value = `${month}월 거래내역`;
+      isReverting.value = false;
+      fetchTransactions(); // 이전 월 데이터 다시 가져오기
+    },
+    reject: () => {
+    }
+  });
 };
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
 
 .total-frame {
+  width: 95%;
+  margin: 30px auto;
+  /* 가운데 정렬 */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  align-items: flex-start;
-  padding: 1rem;
-  margin: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .title-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  width: 100%;
+  flex-direction: column;
 }
 
 .icon-button-group {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  justify-content: flex-end !important;
+  margin-bottom: 20px;
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0 auto;
+.money {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 1.5em;
+  justify-content: center;
+  align-items: center;
 }
 
 .datatable-card {
@@ -190,16 +258,10 @@ const exportCSV = () => {
   width: 100%;
 }
 
-.datatable-aligned {
-  width: 50rem;
-  margin: 0 auto;
-}
-
 .export-button-container {
   display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  padding-right: 1rem;
+  justify-content: space-between;
+  align-items: center;
 }
 
 :deep(.export-button) {
@@ -223,9 +285,21 @@ const exportCSV = () => {
 }
 
 /* DataTable 전체에 폰트 적용 */
-.custom-datatable .p-datatable {
+.centered-datatable .p-datatable {
   font-family: 'Noto Sans KR', sans-serif !important;
   font-size: 1.5rem !important;
   color: #333 !important;
+}
+
+/* 금액 컬럼 스타일 */
+.money-positive {
+  font-weight: bold;
+  color: #519de0;
+}
+
+.custom-tag {
+  /* 원하는 커스터마이징 스타일을 여기에 추가 */
+  font-weight: bold;
+  font-size: 1.1em;
 }
 </style>

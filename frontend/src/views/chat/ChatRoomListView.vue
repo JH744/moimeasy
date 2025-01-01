@@ -366,7 +366,7 @@ export default {
 <style scoped>
 .chat-room-list {
   max-width: 700px;
-  margin: 50px auto;
+  margin: 10px auto;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
@@ -473,7 +473,7 @@ hr {
   background: white;
   padding: 20px;
   border-radius: 10px;
-  max-width: 500px;
+  width: 200px;
   width: 100%;
 }
 

@@ -15,7 +15,7 @@ public class RemittanceListDto { // 계좌 내역 조회
         private Long userId; // 회원 Id
         private String receivedAccount; // 송금받는 계좌
         private String userName; // 이름
-        private String photo; // 사진
+        private String profileImage; // 사진
         private double amount; // 금액
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
