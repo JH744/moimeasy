@@ -238,7 +238,7 @@ export default {
 .chat-modal-content {
   position: relative;
   background: white;
-  width: 60%;
+  width: 40%;
 
   border-radius: 10px;
   padding: 10px;
