@@ -44,14 +44,14 @@
         </template>
 
         <!-- 번호 컬럼 -->
-        <Column field="boardId" header="번호" style="min-width: 8rem" sortable>
+        <Column field="boardId" header="번호" style="min-width: 4rem" sortable>
           <template #body="{ data }">
             {{ data.boardId }}
           </template>
         </Column>
 
         <!-- 제목 컬럼 -->
-        <Column field="title" header="제목" style="min-width: 14rem" sortable>
+        <Column field="title" header="제목" style="width: 30rem" sortable>
           <template #body="{ data }">
             <router-link :to="`/schedule/board-detail/${data.boardId}`">
               {{ data.title }}
@@ -63,7 +63,7 @@
         <Column
           field="writerName"
           header="작성자"
-          style="min-width: 14rem"
+          style="min-width: 10rem"
           filterField="writerName"
           :showFilterMenu="false"
         >

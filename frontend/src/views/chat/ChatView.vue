@@ -340,8 +340,8 @@ export default {
   display: flex;
   flex-direction: column;
   height: 600px;
-  width: 60%;
-  margin: 35px auto;
+  width: 90%;
+  margin: 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
   overflow: hidden;
