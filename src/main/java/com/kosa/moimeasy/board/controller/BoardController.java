@@ -35,7 +35,7 @@ public class BoardController {
     }
 
     // 게시글 추가
-    @Operation(summary = "게시글 상세 조회" ,description ="특정 게시글의 상세내용 조회하기" )
+    @Operation(summary = "게시글 추가" ,description ="게시글 추가하기" )
     @PostMapping("/{id}")
     public ResponseEntity<Board> createBoard(@RequestBody BoardDTO board, @PathVariable("id") Long userId) {
         return ResponseEntity.ok(boardService.createBoard(board,userId));

@@ -28,6 +28,7 @@ import axios from 'axios';
 import Skeleton from 'primevue/skeleton';
 import Masonry from 'masonry-layout';
 import imagesLoaded from 'imagesloaded';
+import Image from 'primevue/image';
 //  ref 변수
 const galleryRef = ref(null); // 갤러리 컨테이너 참조
 const galleryList = ref([]); // 갤러리 아이템 목록

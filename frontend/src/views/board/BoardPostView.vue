@@ -66,8 +66,8 @@ const post = ref({
 
 // 게시글 제출 핸들러
 const submitPost = async () => {
-  console.log('ssss');
   try {
+    // 서버로 전송할 데이터
     const requestData = {
       title: post.value.title,
       tag: post.value.tag,
@@ -110,6 +110,7 @@ const submitPost = async () => {
       life: 3000,
     });
   } finally {
+    // 게시판목록으로 이동
     await router.push('/schedule/board');
   }
 };
