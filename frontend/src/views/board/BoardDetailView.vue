@@ -1,7 +1,7 @@
 <template>
   <div class="board-detail" v-if="board">
+    <!-- 제목 -->
     <h1 class="title" :aria-label="board.title">{{ board.title }}</h1>
-
     <!-- 작성자 -->
     <div class="author">
       <!-- Avatar를 사용하여 이미지 표시 -->
@@ -56,7 +56,6 @@ import { useRouter } from 'vue-router';
 import { useLoadingStore } from '@/stores/useLoadingStore';
 import { fetchImageUrl } from '@/utils/image-load-utils';
 const loadingStore = useLoadingStore();
-
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();
@@ -70,7 +69,7 @@ const board = ref(null);
 const defaultProfileImage =
   'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png';
 
-// 게시글 데이터를 불러오는 함수
+// 게시글 데이터 불러오기
 const fetchBoardData = async () => {
   loadingStore.startLoading(); // 로딩 시작
   try {
@@ -85,11 +84,12 @@ const fetchBoardData = async () => {
   }
 };
 
+/** 수정 페이지로 이동*/
 const linkToUpdate = () => {
   router.push(`/schedule/board-update/${boardId}`);
 };
 
-//삭제 api
+/** 삭제 api */
 const fetchDelete = async () => {
   try {
     const response = await axios.delete(`/api/v1/boards/${boardId}`);
